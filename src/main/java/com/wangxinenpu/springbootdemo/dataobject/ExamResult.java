@@ -3,6 +3,8 @@ package com.wangxinenpu.springbootdemo.dataobject;
 
 import java.io.Serializable;
 
+
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import javax.persistence.*;
@@ -16,7 +18,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class User implements Serializable{
+public class ExamResult implements Serializable{
 
 
 	//========== properties ==========
@@ -24,20 +26,28 @@ public class User implements Serializable{
 	@Id
 	@GeneratedValue(generator="JDBC")
     @ApiModelProperty("")
+    @Column( name="id")
+    private Long id;
+
+    @ApiModelProperty("")
     @Column( name="user_id")
     private Long userId;
 
     @ApiModelProperty("")
-    @Column( name="username")
-    private String username;
+    @Column( name="exam_id")
+    private Long examId;
 
     @ApiModelProperty("")
-    @Column( name="password")
-    private String password;
+    @Column( name="done")
+    private Integer done;
 
     @ApiModelProperty("")
-    @Column( name="total_correct")
-    private Integer totalCorrect;
+    @Column( name="num_correct")
+    private Integer numCorrect;
+
+    @ApiModelProperty("")
+    @Column( name="answers")
+    private String answers;
 
 
 

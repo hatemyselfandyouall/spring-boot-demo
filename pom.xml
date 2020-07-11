@@ -79,14 +79,9 @@
 			<version>2.9.2</version>
 		</dependency>
 		<dependency>
-			<groupId>cn.hyperchain.javasdk</groupId>
-			<artifactId>hyperchainsdk</artifactId>
-			<version>4.2.3</version>
-		</dependency>
-		<dependency>
-			<groupId>cn.filoop.sdk</groupId>
-			<artifactId>filoop-sdk</artifactId>
-			<version>1.0.5</version>
+			<groupId>com.github.pagehelper</groupId>
+			<artifactId>pagehelper-spring-boot-starter</artifactId>
+			<version>1.2.12</version>
 		</dependency>
 	</dependencies>
 
