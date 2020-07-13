@@ -29,13 +29,14 @@ public class UserController  {
         ResultVo resultVo=new ResultVo();
         try {
            Integer flag=userFacade.saveUser(userSaveVOu);
-            if(1!=flag){
+            if(1==flag){
+                resultVo.setResultDes("注册成功");
                 resultVo.setSuccess(true);
             }else {
-                resultVo.setResultDes("注册成功");
+                resultVo.setResultDes("注册失败");
             }
         }catch (Exception e){
-            resultVo.setResultDes("注册异常");
+            resultVo.setResultDes("注册异常:不允许同名");
             log.error("注册异常",e);
         }
         return resultVo;
@@ -57,7 +58,7 @@ public class UserController  {
 
     @ApiOperation(value = "用户排行")
     @RequestMapping(value = "/userRanking",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<UserDetailShowVO> userRanking(PageVO pageVO){
+    public ResultVo<UserDetailShowVO> userRanking(@RequestBody PageVO pageVO){
         ResultVo resultVo=new ResultVo();
         try {
             PageInfo<UserDetailShowVO> examList=userFacade.userRanking(pageVO);

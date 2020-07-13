@@ -1,22 +1,28 @@
 package com.wangxinenpu.springbootdemo.service.serviceImpl;
 
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.wangxinenpu.springbootdemo.dao.mapper.ExamMapper;
 import com.wangxinenpu.springbootdemo.dao.mapper.ExamResultMapper;
 import com.wangxinenpu.springbootdemo.dao.mapper.QuestionMapper;
-import com.wangxinenpu.springbootdemo.dataobject.Exam;
-import com.wangxinenpu.springbootdemo.dataobject.ExamResult;
-import com.wangxinenpu.springbootdemo.dataobject.Question;
+import com.wangxinenpu.springbootdemo.dao.mapper.UserMapper;
+import com.wangxinenpu.springbootdemo.dataobject.*;
 import com.wangxinenpu.springbootdemo.dataobject.vo.Exam.*;
 import com.wangxinenpu.springbootdemo.dataobject.vo.root.PageVO;
 import com.wangxinenpu.springbootdemo.service.ExamFacade;
 import lombok.experimental.Accessors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import tk.mybatis.mapper.entity.Example;
 import org.springframework.beans.BeanUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +42,8 @@ public class ExamServiceImpl implements ExamFacade {
     QuestionMapper questionMapper;
     @Autowired
     ExamResultMapper examResultMapper;
+    @Autowired
+    UserMapper userMapper;
 
     @Override
     public PageInfo<Exam> getExamList(ExamListVO examListVO) {
@@ -102,9 +110,39 @@ public class ExamServiceImpl implements ExamFacade {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer saveExamResult(SaveExamResultVO saveExamResultVO) {
         ExamResult examResult=new ExamResult();
         BeanUtils.copyProperties(saveExamResultVO,examResult);
-        return examResultMapper.insert(examResult);
+        Integer flag=examResultMapper.insert(examResult);
+        User user=userMapper.selectByPrimaryKey(examResult.getUserId());
+        user.setTotalCorrect(user.getTotalCorrect()+examResult.getNumCorrect());
+        userMapper.updateByPrimaryKeySelective(user);
+        return flag;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer importExample(MultipartFile file) throws Exception {
+        String testJSON="";
+        BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()));
+        String line;
+        StringBuilder sb=new StringBuilder();
+        while ((line = br.readLine()) != null) {
+            sb.append(line);
+        }
+        testJSON=sb.toString();
+        System.out.println(testJSON);
+        ExamSaveVO examSaveVO= JSONObject.parseObject(testJSON,ExamSaveVO.class);
+        Exam exam=new Exam();
+        BeanUtils.copyProperties(examSaveVO,exam);
+        examMapper.insertSelective(exam);
+        Long examId=exam.getId();
+        examSaveVO.getQuestions().forEach(i->{
+            i.setId(null);
+            i.setExamId(examId);
+            questionMapper.insertSelective(i);
+        });
+        return 1;
     }
 }

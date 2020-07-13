@@ -10,11 +10,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.wangxinenpu.springbootdemo.dataobject.Exam;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -28,7 +26,7 @@ public class ExamController  {
 
     @ApiOperation(value = "列表")
     @RequestMapping(value = "/list",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<ExamDetailShowVO> getExamList(PageVO pageVO){
+    public ResultVo<ExamDetailShowVO> getExamList(@RequestBody PageVO pageVO){
         ResultVo resultVo=new ResultVo();
         try {
             PageInfo<ExamDetailShowVO> examList=examFacade.getExamList(pageVO);
@@ -48,11 +46,11 @@ public class ExamController  {
 
     @ApiOperation(value = "考试结果保存")
     @RequestMapping(value = "/saveExamResult",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo saveExamResult(SaveExamResultVO saveExamResultVO){
+    public ResultVo saveExamResult(@RequestBody SaveExamResultVO saveExamResultVO){
         ResultVo resultVo=new ResultVo();
         try {
             Integer flag =examFacade.saveExamResult(saveExamResultVO);
-            if(1!=flag){
+            if(1==flag){
                 resultVo.setResultDes("考试结果保存成功");
                 resultVo.setSuccess(true);
             }else {
@@ -64,6 +62,27 @@ public class ExamController  {
         }
         return resultVo;
     }
+
+
+    @ApiOperation(value = "试卷导入")
+    @RequestMapping(value = "/importFile",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
+    public ResultVo importFile(@RequestPart("file")MultipartFile file){
+        ResultVo resultVo=new ResultVo();
+        try {
+            Integer flag =examFacade.importExample(file);
+            if(1==flag){
+                resultVo.setResultDes("试卷导入成功");
+                resultVo.setSuccess(true);
+            }else {
+                resultVo.setResultDes("试卷导入失败");
+            }
+        }catch (Exception e){
+            resultVo.setResultDes("试卷导入异常");
+            log.error("试卷导入异常",e);
+        }
+        return resultVo;
+    }
+
 
 
 }
