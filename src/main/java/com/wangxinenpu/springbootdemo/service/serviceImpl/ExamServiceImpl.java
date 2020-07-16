@@ -1,7 +1,6 @@
 package com.wangxinenpu.springbootdemo.service.serviceImpl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.wangxinenpu.springbootdemo.dao.mapper.ExamMapper;
@@ -12,7 +11,6 @@ import com.wangxinenpu.springbootdemo.dataobject.*;
 import com.wangxinenpu.springbootdemo.dataobject.vo.Exam.*;
 import com.wangxinenpu.springbootdemo.dataobject.vo.root.PageVO;
 import com.wangxinenpu.springbootdemo.service.ExamFacade;
-import lombok.experimental.Accessors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,15 +19,12 @@ import tk.mybatis.mapper.entity.Example;
 import org.springframework.beans.BeanUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.wangxinenpu.springbootdemo.dataobject.Exam;
 import com.wangxinenpu.springbootdemo.dataobject.vo.Exam.ExamDeleteVO;
-import com.wangxinenpu.springbootdemo.dataobject.vo.Exam.ExamDetailVO;
 import com.wangxinenpu.springbootdemo.dataobject.vo.Exam.ExamListVO;
 import com.wangxinenpu.springbootdemo.dataobject.vo.Exam.ExamSaveVO;
 
@@ -58,12 +53,14 @@ public class ExamServiceImpl implements ExamFacade {
     }
 
     @Override
-    public Exam getExamDetail(ExamDetailVO examDetailVO) {
-        if (examDetailVO==null||examDetailVO.getId()==null) {
+    public ExamDetailShowVO getExamDetail(Long id) {
+        if (id==null) {
             return null;
         };
-        Exam exam=examMapper.selectByPrimaryKey(examDetailVO.getId());
-        return exam;
+        Exam exam=examMapper.selectByPrimaryKey(id);
+        ExamDetailShowVO examDetailShowVO=new ExamDetailShowVO();
+        BeanUtils.copyProperties(exam,examDetailShowVO);
+        return examDetailShowVO.setQuestionList(questionMapper.select(new Question().setExamId(exam.getId())));
     }
 
     @Override
@@ -110,13 +107,16 @@ public class ExamServiceImpl implements ExamFacade {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer saveExamResult(SaveExamResultVO saveExamResultVO) {
         ExamResult examResult=new ExamResult();
         BeanUtils.copyProperties(saveExamResultVO,examResult);
+        Example example=new Example(ExamResult.class);
+        example.createCriteria().andEqualTo("userId",saveExamResultVO.getUserId()).andEqualTo("examId",saveExamResultVO.getExamId());
+        examResultMapper.deleteByExample(example);
         Integer flag=examResultMapper.insert(examResult);
         User user=userMapper.selectByPrimaryKey(examResult.getUserId());
-        user.setTotalCorrect(user.getTotalCorrect()+examResult.getNumCorrect());
+        user.setTotalCorrect(examResultMapper.select(new ExamResult().setUserId(user.getUserId())).parallelStream().map(ExamResult::getNumCorrect).reduce(0,(a,b)->a+b));
+        user.setTotalAnswer(examResultMapper.select(new ExamResult().setUserId(user.getUserId())).parallelStream().map(ExamResult::getNumAnswered).reduce(0,(a,b)->a+b));
         userMapper.updateByPrimaryKeySelective(user);
         return flag;
     }

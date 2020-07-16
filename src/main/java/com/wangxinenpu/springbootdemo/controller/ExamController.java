@@ -44,6 +44,25 @@ public class ExamController  {
     }
 
 
+    @ApiOperation(value = "详情")
+    @RequestMapping(value = "/list",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
+    public ResultVo<ExamDetailShowVO> getExamList(@RequestParam("id") Long id){
+        ResultVo resultVo=new ResultVo();
+        try {
+            ExamDetailShowVO exam=examFacade.getExamDetail(id);
+            if(exam!=null){
+                resultVo.setResult(exam);
+                resultVo.setSuccess(true);
+            }else {
+                resultVo.setResultDes("获取详情失败");
+            }
+        }catch (Exception e){
+            resultVo.setResultDes("获取详情异常");
+            log.error("获取详情异常",e);
+        }
+        return resultVo;
+    }
+
     @ApiOperation(value = "考试结果保存")
     @RequestMapping(value = "/saveExamResult",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
     public ResultVo saveExamResult(@RequestBody SaveExamResultVO saveExamResultVO){

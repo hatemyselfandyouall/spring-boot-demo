@@ -56,6 +56,19 @@ public class UserController  {
         return resultVo;
     }
 
+    @ApiOperation(value = "详情")
+    @RequestMapping(value = "/detail",produces = {"application/json;charset=UTF-8"})
+    public ResultVo<UserDetailShowVO> login(@RequestParam("userId") Long userId){
+        ResultVo resultVo=new ResultVo();
+        try {
+            resultVo=userFacade.detail(userId);
+        }catch (Exception e){
+            resultVo.setResultDes("详情异常");
+            log.error("详情异常",e);
+        }
+        return resultVo;
+    }
+
     @ApiOperation(value = "用户排行")
     @RequestMapping(value = "/userRanking",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
     public ResultVo<UserDetailShowVO> userRanking(@RequestBody PageVO pageVO){

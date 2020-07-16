@@ -22,6 +22,8 @@ public interface UserFacade{
     ResultVo login(String userName, String passWord);
 
     PageInfo<UserDetailShowVO> userRanking(PageVO pageVO);
+
+    ResultVo detail(Long userId);
 }
 
  

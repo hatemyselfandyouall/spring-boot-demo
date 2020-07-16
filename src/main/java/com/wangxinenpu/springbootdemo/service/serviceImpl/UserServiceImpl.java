@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserFacade {
         User user= new User();
         BeanUtils.copyProperties(userSaveVO,user);
         if (user.getUserId()==null){
-            return userMapper.insertSelective(user.setTotalCorrect(0));
+            return userMapper.insertSelective(user.setTotalCorrect(0).setTotalAnswer(0));
         }else {
             Example example=new Example(User.class);
             example.createCriteria().andEqualTo("id",user.getUserId());
@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserFacade {
             return null;
         }
         Example example=new Example(User.class);
-        example.setOrderByClause("total_correct");
+        example.setOrderByClause("total_correct desc");
         PageHelper.startPage(pageVO.getPageNum().intValue(),pageVO.getPageSize().intValue());
         List<User> users=userMapper.selectByExample(example);
         List<UserDetailShowVO> userDetailShowVOS=users.parallelStream().map(i->{
@@ -118,5 +118,17 @@ public class UserServiceImpl implements UserFacade {
         }).collect(Collectors.toList());
         PageInfo<UserDetailShowVO> userDetailShowVOPageInfo=new PageInfo<>(userDetailShowVOS);
         return userDetailShowVOPageInfo;
+    }
+
+    @Override
+    public ResultVo detail(Long userId) {
+        ResultVo resultVo=new ResultVo();
+        User user=userMapper.selectByPrimaryKey(userId);
+        UserDetailShowVO userDetailShowVO=new UserDetailShowVO();
+        BeanUtils.copyProperties(user,userDetailShowVO);
+        userDetailShowVO.setExamResults(examResultMapper.select(new ExamResult().setUserId(user.getUserId())));
+        resultVo.setResult(userDetailShowVO);
+        resultVo.setSuccess(true);
+        return resultVo;
     }
 }

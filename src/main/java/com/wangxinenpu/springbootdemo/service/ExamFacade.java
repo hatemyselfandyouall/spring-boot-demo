@@ -7,14 +7,12 @@ import com.wangxinenpu.springbootdemo.dataobject.vo.Exam.*;
 import com.wangxinenpu.springbootdemo.dataobject.vo.root.PageVO;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 
 public interface ExamFacade{
 
 	PageInfo<Exam> getExamList(ExamListVO listVO);
 
-    Exam getExamDetail(ExamDetailVO detailVO);
+    ExamDetailShowVO getExamDetail(Long detailVO);
 
     Integer saveExam(ExamSaveVO saveVO);
 

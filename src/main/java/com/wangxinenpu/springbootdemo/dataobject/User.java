@@ -39,6 +39,9 @@ public class User implements Serializable{
     @Column( name="total_correct")
     private Integer totalCorrect;
 
+    @ApiModelProperty("")
+    @Column( name="total_answer")
+    private Integer totalAnswer;
 
 
 

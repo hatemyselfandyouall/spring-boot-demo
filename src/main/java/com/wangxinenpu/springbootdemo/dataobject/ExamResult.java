@@ -46,6 +46,10 @@ public class ExamResult implements Serializable{
     private Integer numCorrect;
 
     @ApiModelProperty("")
+    @Column( name="num_answered")
+    private Integer numAnswered;
+
+    @ApiModelProperty("")
     @Column( name="answers")
     private String answers;
 
