@@ -55,4 +55,10 @@ public class TestController {
 //        }
 //        return null;
 //    }
+
+    public static void main(String[] args) {
+        RestTemplate restTemplate=new RestTemplate();
+        ResponseEntity<String> responseEntity=restTemplate.getForEntity("http://localhost:8080/test/doCurl?url=http://www.baidu.com",String.class);
+        System.out.println(responseEntity);
+    }
 }
