@@ -5,10 +5,9 @@ import com.wangxinenpu.springbootdemo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,6 +25,7 @@ public class TestController {
     @Autowired
     RedisTemplate redisTemplate;
 
+
     @RequestMapping("hello")
     public String hello(){
         log.info("hello log");
@@ -38,7 +38,14 @@ public class TestController {
         return sysUser;
     }
 
-//    @RequestMapping(value = "redisTest",method = RequestMethod.GET)
+    @RequestMapping(value = "doCurl",method = RequestMethod.GET)
+    public ResponseEntity<String>  doCurl(@RequestParam("url")String url){
+        RestTemplate templater=new RestTemplate();
+        ResponseEntity<String> responseEntity=templater.getForEntity(url,String.class);
+        return responseEntity;
+    }
+
+    //    @RequestMapping(value = "redisTest",method = RequestMethod.GET)
 //    public SysUser redisTest(){
 ////        for (int i=0;i<10;i++) {
 ////            redisTemplate.opsForValue().set(i+"","缓存测试"+i);
