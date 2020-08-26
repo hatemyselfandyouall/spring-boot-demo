@@ -1,7 +1,7 @@
 package com.wangxinenpu.springbootdemo.controller;
 
-import com.wangxinenpu.springbootdemo.dataobject.SysUser;
-import com.wangxinenpu.springbootdemo.service.SysUserService;
+import com.wangxinenpu.springbootdemo.dataobject.User;
+import com.wangxinenpu.springbootdemo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,7 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class TestController {
 
     @Autowired
-    SysUserService sysUserService;
+    UserService userService;
+
 
     @Autowired
     RedisTemplate redisTemplate;
@@ -32,19 +33,19 @@ public class TestController {
     }
 
     @RequestMapping(value = "mybtaisTest",method = RequestMethod.GET)
-    public SysUser mybtaisTest(@RequestParam(value = "id")Integer id){
-        SysUser sysUser=sysUserService.getById(id);
+    public User mybtaisTest(@RequestParam(value = "id")Integer id){
+        User sysUser=userService.getById(id);
         return sysUser;
     }
 
-    @RequestMapping(value = "redisTest",method = RequestMethod.GET)
-    public SysUser redisTest(){
-//        for (int i=0;i<10;i++) {
-//            redisTemplate.opsForValue().set(i+"","缓存测试"+i);
+//    @RequestMapping(value = "redisTest",method = RequestMethod.GET)
+//    public SysUser redisTest(){
+////        for (int i=0;i<10;i++) {
+////            redisTemplate.opsForValue().set(i+"","缓存测试"+i);
+////        }
+//        for (int i=0;i<10;i++){
+//            log.info(redisTemplate.opsForValue().get(i+"")+"");
 //        }
-        for (int i=0;i<10;i++){
-            log.info(redisTemplate.opsForValue().get(i+"")+"");
-        }
-        return null;
-    }
+//        return null;
+//    }
 }
