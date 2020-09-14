@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -63,23 +64,31 @@ public class TestController {
 //        }
 //        return null;
 //    }
-
-    public static void main(String[] args) {
-        RestTemplate restTemplate=new RestTemplate();
-        String testUrl65="";
-        String testUrl68="";
-        List<Map<String, String>> codeMaps= ExcelHelper.getFunctionListByExcel("C:\\Users\\epsoft\\Documents\\WeChat Files\\wxid_03wcfsqvw1nb22\\FileStorage\\File\\2020-08\\无标题.xlsx");
-        for (Map<String, String> codeMap:codeMaps){
-            String url=codeMap.get("url");
-            String test65result=restTemplate.getForEntity(testUrl65+url,String.class).getBody();
-            String test68result=restTemplate.getForEntity(testUrl68+url,String.class).getBody();
-            codeMap.put("test65result",test65result);
-            codeMap.put("test68result",test68result);
-            if (!test65result.equals(test68result)){
-                System.out.println(codeMap);
+    @RequestMapping(value = "testShell",method = RequestMethod.POST)
+    public Integer  doCurl(@RequestPart MultipartFile file){
+        try {
+            RestTemplate restTemplate=new RestTemplate();
+            String testUrl65="http://10.87.0.65:8090/test/doCurl?url=";
+            String testUrl68="http://10.87.0.68:8090/test/doCurl?url=";
+            List<Map<String, String>> codeMaps= ExcelHelper.getFunctionListByExcel(file);
+            for (Map<String, String> codeMap:codeMaps){
+                String url=codeMap.get("url");
+                String test65result=restTemplate.getForEntity(testUrl65+url,String.class).getBody();
+                String test68result=restTemplate.getForEntity(testUrl68+url,String.class).getBody();
+                codeMap.put("test65result",test65result);
+                codeMap.put("test68result",test68result);
+                if (!test65result.equals(test68result)){
+                    log.info(codeMap+"");
+                }
             }
+            return 1;
+        }catch (Exception e){
+            return  0;
         }
-//        ResponseEntity<String> responseEntity=restTemplate.getForEntity("http://localhost:8080/test/doCurl?url=http://www.baidu.com1",String.class);
+    }
+    public static void main(String[] args) {
+
+//        ResponseEntity<String> responseEntity=restTemplate.getForEntity("http://10.85.159.203:7019/test/doCurl?url=http://www.baidu.com1",String.class);
 //        System.out.println(responseEntity.getBody());
     }
 }

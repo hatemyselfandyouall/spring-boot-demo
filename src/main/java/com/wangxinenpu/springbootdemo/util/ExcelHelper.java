@@ -124,14 +124,14 @@ public class ExcelHelper {
         return cellValue;
     }
 
-    public static List<Map<String, String>> getFunctionListByExcel(String filePath) {
+    public static List<Map<String, String>> getFunctionListByExcel(MultipartFile file) {
         Workbook wb = null;
         Sheet sheet = null;
         Row row = null;
         List<Map<String, String>> list = null;
         String cellData = null;
         String columns[] = {"code", "url"};
-        wb=readExcel(filePath);
+        wb=readExcelbyMultPartFile(file);
         if (wb != null) {
             //用来存放表中数据
             list = new ArrayList<Map<String, String>>();
