@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysRuleRelationMapper">
+	<resultMap id="SysRuleRelation" type="com.wangxinenpu.springbootdemo.dataobject.po.SysRuleRelation">
+		<!--
+		  @haoxz11MyBatis
+		  规则关系表表
+		-->
+		<result column="id" jdbcType="BIGINT" property="id" />
+		<result column="rule_id" jdbcType="BIGINT" property="ruleId" />
+		<result column="function_id" jdbcType="BIGINT" property="functionId" />
+		<result column="field_name" jdbcType="VARCHAR" property="fieldName" />
+		<result column="aaa027" jdbcType="INTEGER" property="aaa027" />
+		<result column="ordern" jdbcType="DECIMAL" property="ordern" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	</resultMap>
+	<insert id="insertSysRuleRelation" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRuleRelation">
+		<!--
+		  @haoxz11MyBatis
+		  插入规则关系表记录
+		-->
+		<![CDATA[
+		insert into sys_rule_relation (id, rule_id, function_id, 
+			field_name, aaa027, ordern, 
+			create_time, modify_time)
+		values (#{id,jdbcType=BIGINT}, #{ruleId,jdbcType=BIGINT}, #{functionId,jdbcType=BIGINT}, 
+			#{fieldName,jdbcType=VARCHAR}, #{aaa027,jdbcType=INTEGER}, #{ordern,jdbcType=DECIMAL}, 
+			sysdate(), sysdate())
+		]]>
+	</insert>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysRuleRelation">
+		<!--
+		  @haoxz11MyBatis
+		  搜索规则关系表列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_rule_relation
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索规则关系表的记录数量
+		-->
+		select count(*) from sys_rule_relation
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索规则关系表记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="ruleId != null">
+				<![CDATA[ AND rule_id = #{ruleId,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="functionId != null">
+				<![CDATA[ AND function_id = #{functionId,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="fieldName != null">
+				<![CDATA[ AND field_name = #{fieldName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="aaa027 != null">
+				<![CDATA[ AND aaa027 = #{aaa027,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="ordern != null">
+				<![CDATA[ AND ordern = #{ordern,jdbcType=DECIMAL} ]]> 
+			</if>
+		</where>
+	</sql>
+</mapper>

@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysFunctionMapper">
+	<resultMap id="SysFunction" type="com.wangxinenpu.springbootdemo.dataobject.po.SysFunction">
+		<!--
+		  @haoxz11MyBatis
+		  系统功能表表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="location" jdbcType="VARCHAR" property="location" />
+		<result column="title" jdbcType="VARCHAR" property="title" />
+		<result column="parent_id" jdbcType="BIGINT" property="parentId" />
+		<result column="fun_order" jdbcType="INTEGER" property="funOrder" />
+		<result column="node_type" jdbcType="VARCHAR" property="nodeType" />
+		<result column="is_log" jdbcType="VARCHAR" property="isLog" />
+		<result column="dev_eloper" jdbcType="VARCHAR" property="devEloper" />
+		<result column="icon" jdbcType="VARCHAR" property="icon" />
+		<result column="description" jdbcType="VARCHAR" property="description" />
+		<result column="fun_type" jdbcType="VARCHAR" property="funType" />
+		<result column="active" jdbcType="VARCHAR" property="active" />
+		<result column="fun_code" jdbcType="VARCHAR" property="funCode" />
+		<result column="file_name" jdbcType="VARCHAR" property="fileName" />
+		<result column="file_path" jdbcType="VARCHAR" property="filePath" />
+		<result column="au_flag" jdbcType="VARCHAR" property="auFlag" />
+		<result column="rb_flag" jdbcType="VARCHAR" property="rbFlag" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+		<result column="vue_code" jdbcType="LONGVARCHAR" property="vueCode" />
+		<result column="business_id" jdbcType="BIGINT" property="businessId" />
+		<result column="audit_hierarchy" jdbcType="BIGINT" property="auditHierarchy" />
+		<result column="is_bus" jdbcType="VARCHAR" property="isBus" />
+		<result column="system_type" jdbcType="VARCHAR" property="systemType" />
+		<result column="group_name" jdbcType="VARCHAR" property="groupName" />
+		<result column="fun_level" jdbcType="VARCHAR" property="funLevel" />
+		<result column="create_people" jdbcType="BIGINT" property="createPeople" />
+		<result column="uuid" jdbcType="VARCHAR" property="uuid" />
+		<result column="is_print" jdbcType="VARCHAR" property="isPrint" />
+		<result column="sysmanager_view"  property="sysmanagerView" />
+	</resultMap>
+	<insert id="insertSysFunction" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysFunction" useGeneratedKeys="true">
+		<!--
+		  @haoxz11MyBatis
+		  插入系统功能表记录
+		-->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_function (`location`, title, parent_id, 
+			fun_order, node_type, is_log, 
+			dev_eloper, icon, description, 
+			fun_type, active, fun_code, 
+			file_name, file_path, au_flag, 
+			rb_flag, create_time, modify_time, vue_code,business_id,audit_hierarchy,is_bus,system_type,group_name,
+			fun_level,create_people,uuid,is_print)
+		values (#{location,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, #{parentId,jdbcType=BIGINT}, 
+			#{funOrder,jdbcType=INTEGER}, #{nodeType,jdbcType=VARCHAR}, #{isLog,jdbcType=VARCHAR}, 
+			#{devEloper,jdbcType=VARCHAR}, #{icon,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
+			#{funType,jdbcType=VARCHAR}, #{active,jdbcType=VARCHAR}, #{funCode,jdbcType=VARCHAR}, 
+			#{fileName,jdbcType=VARCHAR}, #{filePath,jdbcType=VARCHAR}, #{auFlag,jdbcType=VARCHAR}, 
+			#{rbFlag,jdbcType=VARCHAR}, sysdate(), sysdate(), #{vueCode,jdbcType=LONGVARCHAR},
+			#{businessId,jdbcType=BIGINT}, #{auditHierarchy,jdbcType=BIGINT},#{isBus,jdbcType=VARCHAR},
+			#{systemType,jdbcType=VARCHAR},#{groupName,jdbcType=VARCHAR},
+			#{funLevel,jdbcType=VARCHAR},#{createPeople,jdbcType=BIGINT},#{uuid,jdbcType=VARCHAR},#{isPrint,jdbcType=VARCHAR}
+			)
+		]]>
+	</insert>
+	<update id="updateSysFunction" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysFunction">
+		<!--
+		  @haoxz11MyBatis
+		  更新系统功能表记录
+		-->
+		update sys_function
+		<set>
+			<if test="location != null">
+				`location` = #{location,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				title = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="parentId != null">
+				parent_id = #{parentId,jdbcType=BIGINT},
+			</if>
+			<if test="funOrder != null">
+				fun_order = #{funOrder,jdbcType=INTEGER},
+			</if>
+			<if test="nodeType != null">
+				node_type = #{nodeType,jdbcType=VARCHAR},
+			</if>
+			<if test="isLog != null">
+				is_log = #{isLog,jdbcType=VARCHAR},
+			</if>
+			<if test="devEloper != null">
+				dev_eloper = #{devEloper,jdbcType=VARCHAR},
+			</if>
+			<if test="icon != null">
+				icon = #{icon,jdbcType=VARCHAR},
+			</if>
+			<if test="description != null">
+				description = #{description,jdbcType=VARCHAR},
+			</if>
+			<if test="funType != null">
+				fun_type = #{funType,jdbcType=VARCHAR},
+			</if>
+			<if test="active != null">
+				active = #{active,jdbcType=VARCHAR},
+			</if>
+			<if test="funCode != null">
+				fun_code = #{funCode,jdbcType=VARCHAR},
+			</if>
+			<if test="fileName != null">
+				file_name = #{fileName,jdbcType=VARCHAR},
+			</if>
+			<if test="filePath != null">
+				file_path = #{filePath,jdbcType=VARCHAR},
+			</if>
+			<if test="auFlag != null">
+				au_flag = #{auFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="rbFlag != null">
+				rb_flag = #{rbFlag,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate(),
+			<if test="vueCode != null">
+				vue_code = #{vueCode,jdbcType=LONGVARCHAR},
+			</if>
+			<if test="businessId != null">
+				business_id = #{businessId,jdbcType=BIGINT},
+			</if>
+			<if test="auditHierarchy != null">
+				audit_hierarchy = #{auditHierarchy,jdbcType=BIGINT},
+			</if>
+			<if test="isBus != null">
+				is_bus = #{isBus,jdbcType=VARCHAR},
+			</if>
+			<if test="systemType != null">
+				system_type = #{systemType,jdbcType=VARCHAR},
+			</if>
+			<if test="groupName != null">
+				group_name = #{groupName,jdbcType=VARCHAR},
+			</if>
+			<if test="funLevel != null">
+				fun_level = #{funLevel,jdbcType=VARCHAR},
+			</if>
+			<if test="createPeople != null">
+				create_people = #{createPeople,jdbcType=BIGINT},
+			</if>
+			<if test="uuid != null">
+				uuid = #{uuid,jdbcType=VARCHAR},
+			</if>
+			<if test="isPrint != null">
+				is_print = #{isPrint,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.Long" resultMap="SysFunction">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询系统功能表记录
+		-->
+		select  * from sys_function where id = #{id,jdbcType=BIGINT}
+	</select>
+
+	<select id="queryRbFlagListById" parameterType="map" resultMap="SysFunction">
+		select * from sys_function where id in  (${ids})
+	</select>
+
+	<select id="getListByWhere" parameterType="map" resultMap="SysFunction">
+		<!--
+		  @haoxz11MyBatis
+		  搜索系统功能表列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_function
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索系统功能表的记录数量
+		-->
+		select count(*) from sys_function
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索系统功能表记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=DECIMAL} ]]> 
+			</if>
+			<if test="location != null">
+				<![CDATA[ AND `location` = #{location,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="title != null">
+				<![CDATA[ AND title = #{title,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="parentId != null">
+				<![CDATA[ AND parent_id = #{parentId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="funOrder != null">
+				<![CDATA[ AND fun_order = #{funOrder,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="nodeType != null">
+				<![CDATA[ AND node_type = #{nodeType,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="isLog != null">
+				<![CDATA[ AND is_log = #{isLog,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="devEloper != null">
+				<![CDATA[ AND dev_eloper = #{devEloper,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="icon != null">
+				<![CDATA[ AND icon = #{icon,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="description != null">
+				<![CDATA[ AND description = #{description,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="funType != null">
+				<![CDATA[ AND fun_type = #{funType,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="active != null">
+				<![CDATA[ AND active = #{active,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="funCode != null">
+				<![CDATA[ AND fun_code = #{funCode,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="fileName != null">
+				<![CDATA[ AND file_name = #{fileName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="filePath != null">
+				<![CDATA[ AND file_path = #{filePath,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="auFlag != null">
+				<![CDATA[ AND au_flag = #{auFlag,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="rbFlag != null">
+				<![CDATA[ AND rb_flag = #{rbFlag,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="vueCode != null">
+				<![CDATA[ AND vue_code = #{vueCode,jdbcType=LONGVARCHAR} ]]> 
+			</if>
+			<if test="businessId != null">
+				<![CDATA[ AND business_id = #{businessId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="auditHierarchy != null">
+				<![CDATA[ AND audit_hierarchy = #{auditHierarchy,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="isBus != null">
+				<![CDATA[ AND is_bus = #{isBus,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="systemType != null">
+				<![CDATA[ AND system_type = #{systemType,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="funLevel != null">
+				<![CDATA[ AND fun_level = #{funLevel,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="createPeople != null">
+				<![CDATA[ AND create_people = #{createPeople,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="uuid != null">
+				<![CDATA[ AND uuid = #{uuid,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="isPrint != null">
+				<![CDATA[ AND is_print = #{isPrint,jdbcType=VARCHAR} ]]>
+			</if>
+
+		</where>
+	</sql>
+	
+	<!-- 查询所有功能-->
+	<select id="getFunctionList" parameterType="java.lang.String" resultMap="SysFunction">
+		select * from sys_function s where s.node_type!='3' and s.active='1'
+	</select>
+	
+	<!-- 查询角色所拥有的功能-->
+	<select id="queryFunctionListByRoleId" parameterType="java.lang.String" resultMap="SysFunction">
+		select distinct s.* from sys_function s, sys_role_function sr where s.id=sr.function_id and 
+		s.active='1' and sr.role_id in(${roleIds})
+		order by s.fun_order
+	</select>
+	
+	<!-- 根据用户和菜单类型查询-->
+	<select id="findByFunTypeAndUserList" parameterType="map" resultMap="SysFunction">
+		select distinct s.* from sys_function s, sys_role_function sr where s.id=sr.function_id and 
+		s.active='1' and sr.role_id in(${roleIds}) and fun_type = #{funType,jdbcType=VARCHAR}
+		order by s.fun_order
+	</select>
+	
+	<!-- 根据角色和是否接入流程查询菜单-->
+	<select id="queryFunctionListByRoleIdsAndIsBus" parameterType="java.lang.String" resultMap="SysFunction">
+		select distinct s.* from sys_function s, sys_role_function sr where s.id=sr.function_id and s.active='1' 
+		<if test="null != roleIds and roleIds !=''">
+			and sr.role_id in(${roleIds})
+		</if>
+		<if test="null != isBus and isBus !=''">
+			and s.is_bus=#{isBus,jdbcType=VARCHAR}
+		</if>
+		<if test="null != funType and funType !=''">
+			and s.fun_type in(${funType})
+		</if>
+		 
+		order by s.fun_order
+	</select>
+	
+	<!--  根据角色类型查询可授权菜单-->
+	<select id="findTreesByRoleType" parameterType="java.lang.String" resultMap="SysFunction">
+		select * from sys_function s where active='1'
+		<if test="roleType==1 ">
+			and (s.fun_type='1' or s.fun_type='0')
+		</if>
+		<if test="roleType==2 ">
+			and (s.fun_type='1' or s.fun_type='0')
+		</if>
+		<if test="roleType==3 ">
+			and (s.fun_type='1' or s.fun_type='0')
+		</if>
+		<if test="roleType==4 ">
+			and (s.fun_type='2' or s.fun_type='3' or s.fun_type='4' or s.fun_type='5'
+				or s.fun_type='6' or s.fun_type='7' or s.fun_type='8' or s.fun_type='9')
+		</if>
+		order by s.fun_order
+	</select>
+	
+	<!-- 查询所有菜单-->
+	<select id="queryAllFunctionList" parameterType="java.lang.String" resultMap="SysFunction">
+		select * from sys_function s where  active='1' order by s.fun_order
+	</select>
+	
+	
+	<select id="queryFunctionListByIsBus" parameterType="java.lang.String" resultMap="SysFunction">
+		select * from sys_function s where active='1' and s.is_bus = #{isBus,jdbcType=VARCHAR} order by s.fun_order
+	</select>
+	
+	<select id="queryFunctionListByIsBusAndFunType" parameterType="map" resultMap="SysFunction">
+		select * from sys_function s where active='1' and s.is_bus = #{isBus,jdbcType=VARCHAR} and s.fun_type in(${funType}) order by s.fun_order
+	</select>
+	
+	<!-- 检查链接是否存在-->
+	<select id="checkLocation" parameterType="map" resultMap="SysFunction">
+		select * from sys_function a
+		<where>
+			<if test="location!=null and  location!='' ">
+				a.location = #{location,jdbcType=VARCHAR}
+			</if>
+			<if test="id!=null and  id!='' ">
+				and a.id != #{id,jdbcType=BIGINT}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询下级菜单-->
+	<select id="getListByParentId" parameterType="java.lang.Long" resultMap="SysFunction">
+		select * from sys_function s where active='1' and parent_id = #{functionId,jdbcType=BIGINT}
+	</select>
+	
+	<!-- 菜单删除 -->
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    	delete from sys_function where id = #{id,jdbcType=BIGINT}
+  	</delete>
+
+
+    <!-- 菜单删除 -->
+    <delete id="deleteByFunType" parameterType="java.lang.String">
+    	delete from sys_function where fun_type = #{funType,jdbcType=VARCHAR}
+  	</delete>
+  	
+  	<!-- 根据菜单类型查询所有功能类型菜单-->
+	<select id="queryNodeTypeListByFunType" parameterType="map" resultMap="SysFunction">
+		select * from sys_function s where active='1' and s.node_type = '3' 
+		<if test="funType!=null and  funType!='' ">
+				and s.fun_type = #{funType,jdbcType=VARCHAR}
+		</if>
+		order by s.fun_order
+	</select>
+	
+	<!-- 根据菜单类型查询可展示的菜单-->
+	<select id="findByFunTypeList" parameterType="map" resultMap="SysFunction">
+		select * from sys_function s where fun_type = #{funType,jdbcType=VARCHAR} and s.id !=1 and s.id !=0 order by s.fun_order
+	</select>
+
+
+	<!-- 根据菜单类型查询可展示的菜单-->
+	<select id="findAccessList" parameterType="map" resultMap="SysFunction">
+		select * from sys_function s  where s.fun_type in
+		(SELECT id from system_manage  where channel_Code =  #{channelCode,jdbcType=VARCHAR}) and s.id !=1 and s.id !=0 and s.node_type =3 order by s.fun_order
+	</select>
+	
+	<!-- 根据菜单类型查询admin可展示的菜单-->
+	<select id="findAdminByFunTypeList" parameterType="map" resultMap="SysFunction">
+		select * from sys_function s where fun_type = #{funType,jdbcType=VARCHAR}
+		and s.id !=1 and s.id !=0  and active='1'
+		<!--
+		and s.system_type !=2 and s.system_type !=3  and s.system_type !=4 and s.system_type !=5
+		and s.system_type !=6 and s.system_type !=7  and s.system_type !=8 and s.system_type !=9
+		and s.parent_id not in(select id from sys_function s where s.system_type =2)
+		and s.parent_id not in(select id from sys_function s where s.system_type =3)
+		and s.parent_id not in(select id from sys_function s where s.system_type =4)
+		and s.parent_id not in(select id from sys_function s where s.system_type =5)  
+		and s.parent_id not in(select id from sys_function s where s.system_type =6)
+		and s.parent_id not in(select id from sys_function s where s.system_type =7)
+		and s.parent_id not in(select id from sys_function s where s.system_type =8)
+		and s.parent_id not in(select id from sys_function s where s.system_type =9)  -->
+		order by s.fun_order
+	</select>
+	
+	<!-- 根据当前排序值和父节点修改排序-->
+	<update id="updateFunOrderAdd" parameterType="map">
+		update sys_function a set a.fun_order = a.fun_order+1 where a.parent_id = #{parentId,jdbcType=BIGINT}
+		and a.fun_order >= #{funOrder,jdbcType=INTEGER}
+	</update>
+	
+	<update id="updateFunOrderSmall" parameterType="map">
+		update sys_function a set a.fun_order = a.fun_order+1 where a.parent_id = #{parentId,jdbcType=BIGINT}
+		and a.fun_order&gt;= #{funOrder,jdbcType=INTEGER} and a.fun_order &lt; #{oldOrder,jdbcType=INTEGER}
+	</update>
+	
+	<update id="updateFunOrderBig" parameterType="map">
+		update sys_function a set a.fun_order = a.fun_order-1 where a.parent_id =#{parentId,jdbcType=BIGINT}
+		and a.fun_order&gt; #{oldOrder,jdbcType=INTEGER} and a.fun_order &lt;= #{funOrder,jdbcType=INTEGER}
+	</update>
+	
+	<!-- 根据菜单链接查询菜单-->
+	<select id="findByLocation" parameterType="java.lang.String" resultMap="SysFunction">
+		select * from sys_function f where f.location like concat('%',#{location,jdbcType=VARCHAR},'%') 
+	</select>
+	
+	<!-- 修改菜单所属节点和排序-->
+	<update id="updateFunNode" parameterType="map">
+		update sys_function a set a.parent_id = #{parentId,jdbcType=BIGINT},a.fun_order= #{funOrder,jdbcType=INTEGER} where a.id = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<!--根据父节点查询最大排序值 -->
+	<select id="findMaxFunOrder" resultType="java.lang.Integer" parameterType="map" >
+		select max(f.fun_order)as funOrder from sys_function f where f.parent_id = #{parentId,jdbcType=BIGINT}
+	</select>
+	
+	<!-- 根据业务类型编号查询菜单-->
+	<select id="findFunctionByBussiness" parameterType="java.lang.String" resultMap="SysFunction">
+		select * from sys_function f where f.business_id = (select id from sys_business_type where number = #{number})
+	</select>
+
+	<!-- 根据标题名称查询 -->
+	<select id="findByTitle" parameterType="java.lang.String" resultMap="SysFunction">
+		select  * from sys_function where title = #{title,jdbcType=VARCHAR} and fun_type = #{funType,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 根据标题名称查询 -->
+	<select id="selectByOrgIdAndSystemId"  resultMap="SysFunction">
+	  select DISTINCT f.* FROM sys_role as r, sys_role_function as rf ,sys_function as f
+			WHERE r.id = rf.role_id and  r.org_id = #{orgId}  and f.id = rf.function_id and f.fun_type=#{systemId} and f.node_type=3
+	</select>
+
+	<select id="selectByUserIdAndSystemId"  resultMap="SysFunction">
+	select sf.* FROM sys_user_role as syr ,sys_function as sf, sys_role_function as srf,system_manage as sm
+	 WHERE syr.user_id = #{userId} and syr.role_id = srf.role_id and srf.function_id = sf.id
+		and sm.channel_Code  = #{channelCode}
+ 			and sf.fun_type = sm.id
+	</select>
+
+
+
+	<!-- 查询角色所拥有的菜单(不包含管理系统)-->
+	<select id="queryFunListByRoleId" resultMap="SysFunction">
+		select * from sys_function where fun_type != 1 and id in (select function_id from sys_role_function
+		<where>
+			role_id in
+			<foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+				#{roleId}
+			</foreach>
+		</where>
+		)
+		order by fun_order
+	</select>
+
+
+
+	<!-- 查询角色所拥有的菜单(不包含管理系统,也不含非内部事项)-->
+	<select id="queryFunListByRoleIdForInnerMenu" resultMap="SysFunction">
+		select * from sys_function where fun_type != 1 and is_bus = 2 and id in (select function_id from sys_role_function
+		<where>
+			role_id in
+			<foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+				#{roleId}
+			</foreach>
+		</where>
+		)
+		order by fun_order
+	</select>
+
+	<!-- 根据标题模糊查询菜单-->
+	<select id="findByFunctitle" parameterType="java.lang.String" resultMap="SysFunction">
+        select * from sys_function f where f.title like concat('%',#{title,jdbcType=VARCHAR},'%')
+	</select>
+
+	<select id="selectByGroupName" resultMap="SysFunction">
+		        select DISTINCT f.group_name from sys_function f where f.group_name is not null
+	</select>
+	
+	<select id="findFunctionInUuid" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysFunctionDTO">
+		select * from sys_function a where a.uuid in
+		<foreach collection="uuids" item="uuids" index="index" open="(" close=")" separator=",">
+			#{uuids}
+		</foreach>
+	</select>
+
+	<select id="tranList" resultMap="SysFunction">
+		select * from sys_function where active=1 and scope_can_change=1
+	</select>
+	
+	<!-- 查询所有省级菜单和市级菜单-->
+	<select id="getFunLevelFunctionList" parameterType="java.lang.String" resultMap="SysFunction">
+		select * from sys_function where fun_level=1 or fun_level=2
+	</select>
+</mapper>

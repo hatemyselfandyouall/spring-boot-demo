@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysRoleFunctionMapper">
+	<resultMap id="SysRoleFunction" type="com.wangxinenpu.springbootdemo.dataobject.po.SysRoleFunction">
+		<!--
+		  @haoxz11MyBatis
+		  角色功能对照表
+		-->
+		<id column="relation_id" jdbcType="VARCHAR" property="relationId" />
+		<result column="role_id" jdbcType="VARCHAR" property="roleId" />
+		<result column="function_id" jdbcType="BIGINT" property="functionId" />
+		<result column="select_state" jdbcType="VARCHAR" property="selectState" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	</resultMap>
+	<insert id="insertSysRoleFunction" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRoleFunction">
+		<!--
+		  @haoxz11MyBatis
+		  插入角色功能对照记录
+		-->
+		<![CDATA[
+		insert into sys_role_function (relation_id, role_id, function_id, select_state,
+			create_time, modify_time)
+		values (#{relationId,jdbcType=VARCHAR}, #{roleId,jdbcType=VARCHAR}, #{functionId,jdbcType=BIGINT}, #{selectState,jdbcType=VARCHAR},
+			sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysRoleFunction" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRoleFunction">
+		<!--
+		  @haoxz11MyBatis
+		  更新角色功能对照记录
+		-->
+		update sys_role_function
+		<set>
+			<if test="roleId != null">
+				role_id = #{roleId,jdbcType=VARCHAR},
+			</if>
+			<if test="functionId != null">
+				function_id = #{functionId,jdbcType=BIGINT},
+			</if>
+			<if test="selectState != null">
+				select_state = #{selectState,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where relation_id = #{relationId,jdbcType=VARCHAR}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.String" resultMap="SysRoleFunction">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询角色功能对照记录
+		-->
+		select  * from sys_role_function where relation_id = #{relationId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysRoleFunction">
+		<!--
+		  @haoxz11MyBatis
+		  搜索角色功能对照列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_role_function
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索角色功能对照的记录数量
+		-->
+		select count(*) from sys_role_function
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索角色功能对照记录，可修改
+		-->
+		<where>
+			<if test="relationId != null">
+				<![CDATA[ AND relation_id = #{relationId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="roleId != null">
+				<![CDATA[ AND role_id = #{roleId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="functionId != null">
+				<![CDATA[ AND function_id = #{functionId,jdbcType=BIGINT} ]]> 
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 根据角色ID删除 -->
+	<delete id="deleteByRoleId" parameterType="java.lang.String">
+    	delete from sys_role_function where role_id = #{roleId,jdbcType=VARCHAR}
+  	</delete>
+
+	<!-- 根据角色ID删除 -->
+	<delete id="deleteByRoleIdsAndFunctionId" parameterType="java.lang.String">
+    	delete from sys_role_function where function_id = #{functionId}
+    	and role_id in
+		<foreach collection="getPermissionRoleList" item="item" separator="," close=")" open="(" >
+			#{item.id}
+		</foreach>
+  	</delete>
+
+
+  	<!-- 根据功能ID删除 -->
+	<delete id="deleteByFunctionId" parameterType="java.lang.Long">
+    	delete from sys_role_function where function_id = #{functionId,jdbcType=BIGINT}
+  	</delete>
+  	
+  	<!-- 根据功能ID查询-->
+	<select id="findByFunctionId" parameterType="java.lang.Long" resultMap="SysRoleFunction">
+		select * from sys_role_function where function_id = #{functionId,jdbcType=BIGINT}
+	</select>
+	
+	<!-- 根据角色ID查询-->
+	<select id="findByRoleId" parameterType="java.lang.String" resultMap="SysRoleFunction">
+		select * from sys_role_function where role_id = #{roleId,jdbcType=VARCHAR}
+	</select>
+
+	<!--
+		  @haoxz11MyBatis
+		  批量插入
+		-->
+	<insert id="insertSysRoleFunctionList" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRoleFunction">
+		insert into sys_role_function (relation_id, role_id, function_id, select_state,
+			create_time, modify_time)
+		values
+		<foreach collection ="list" item="item" separator =",">
+		(#{item.relationId,jdbcType=VARCHAR}, #{item.roleId,jdbcType=VARCHAR}, #{item.functionId,jdbcType=BIGINT}, #{item.selectState,jdbcType=VARCHAR},
+			sysdate(), sysdate())
+		</foreach>
+	</insert>
+
+	<update id="changeSelectStatesByRoleListAndFunction" parameterType="java.lang.String">
+		update sys_role_function set select_state=1 where function_id = #{functionId}
+		and role_id in
+		<foreach collection="getPermissionRoleList" item="item" separator="," close=")" open="(" >
+			#{item.id}
+		</foreach>
+	</update>
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysOrgDepartmentMapper">
+	<resultMap id="SysOrgDepartment" type="com.wangxinenpu.springbootdemo.dataobject.po.SysOrgDepartment">
+		<!--
+		  @hucheng
+		  科室信息表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="code" jdbcType="VARCHAR" property="code" />
+		<result column="org_id" jdbcType="BIGINT" property="orgId" />
+		<result column="linkman" jdbcType="VARCHAR" property="linkman" />
+		<result column="leader" jdbcType="VARCHAR" property="leader" />
+		<result column="short_name" jdbcType="VARCHAR" property="shortName" />
+		<result column="depart_describe" jdbcType="VARCHAR" property="departDescribe" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	</resultMap>
+
+
+	<!-- 根据机构ID和科室名称查询数据 -->
+	<select id="findByWhere" parameterType="map" resultType="java.lang.Long">
+		select id from sys_org_department where org_id = #{orgId,jdbcType=BIGINT} and name=#{name,jdbcType=VARCHAR}
+	</select>
+
+	<insert id="insertDepartmentReturnId" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysOrgDepartment" useGeneratedKeys="true">
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		insert into sys_org_department(name,org_id,create_time,modify_time) values(#{name,jdbcType=VARCHAR},#{orgId,jdbcType=BIGINT},sysdate(),sysdate())
+	</insert>
+
+	<!-- 根据orgIds查询机构树-->
+	<select id="queryDepartmentListByDepartmentIds" parameterType="java.lang.String" resultType="com.wangxinenpu.springbootdemo.dataobject.po.SysOrgDepartment">
+		select d.* from sys_org_department d where d.id in(${departmentIds}) order by d.id
+	</select>
+
+
+</mapper>

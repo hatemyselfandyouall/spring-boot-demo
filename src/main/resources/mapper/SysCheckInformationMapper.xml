@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckInformationMapper" >
+	<resultMap id="SysCheckInformation" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckInformation" >
+		<!--
+		  @haoxz11MyBatis
+		  审核信息表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="pro_id" property="proId" jdbcType="BIGINT" />
+		<result column="bus_id" property="busId" jdbcType="BIGINT" />
+		<result column="check_people_id" property="checkPeopleId" jdbcType="VARCHAR" />
+		<result column="check_people_name" property="checkPeopleName" jdbcType="VARCHAR" />
+		<result column="check_time" property="checkTime" jdbcType="TIMESTAMP" />
+		<result column="check_result" property="checkResult" jdbcType="VARCHAR" />
+		<result column="reject_cause" property="rejectCause" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="his_id" property="hisId" jdbcType="BIGINT" />
+	</resultMap>
+	<insert id="insertSysCheckInformation" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckInformation" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入审核信息表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_information (pro_id,bus_id, check_people_id, check_people_name, 
+			check_time, check_result,reject_cause,his_id, create_time, modify_time
+			)
+		values (#{proId,jdbcType=BIGINT},#{busId,jdbcType=BIGINT}, #{checkPeopleId,jdbcType=VARCHAR}, #{checkPeopleName,jdbcType=VARCHAR}, 
+			#{checkTime,jdbcType=TIMESTAMP}, #{checkResult,jdbcType=VARCHAR},#{rejectCause,jdbcType=VARCHAR},#{hisId,jdbcType=BIGINT},  sysdate(), sysdate()
+			)
+		]]>
+	</insert>
+	<update id="updateSysCheckInformation" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckInformation" >
+		<!--
+		  @haoxz11MyBatis
+		  更新审核信息表记录
+		-->
+		update sys_check_information
+		<set >
+			<if test="proId != null" >
+				pro_id = #{proId,jdbcType=BIGINT},
+			</if>
+			<if test="busId != null" >
+				bus_id = #{busId,jdbcType=BIGINT},
+			</if>
+			<if test="checkPeopleId != null" >
+				check_people_id = #{checkPeopleId,jdbcType=VARCHAR},
+			</if>
+			<if test="checkPeopleName != null" >
+				check_people_name = #{checkPeopleName,jdbcType=VARCHAR},
+			</if>
+			<if test="checkTime != null" >
+				check_time = #{checkTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="checkResult != null" >
+				check_result = #{checkResult,jdbcType=VARCHAR},
+			</if>
+			<if test="rejectCause != null" >
+				reject_cause = #{rejectCause,jdbcType=VARCHAR},
+			</if>
+			<if test="hisId != null" >
+				his_id = #{hisId,jdbcType=BIGINT},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckInformation" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询审核信息表记录
+		-->
+		select  * from sys_check_information where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索审核信息表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="proId != null" >
+				<![CDATA[ AND pro_id = #{proId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="busId != null" >
+				<![CDATA[ AND bus_id = #{busId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="checkPeopleId != null" >
+				<![CDATA[ AND check_people_id = #{checkPeopleId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="checkPeopleName != null" >
+				<![CDATA[ AND check_people_name = #{checkPeopleName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="checkTime != null" >
+				<![CDATA[ AND check_time = #{checkTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="checkResult != null" >
+				<![CDATA[ AND check_result = #{checkResult,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="rejectCause != null" >
+				<![CDATA[ AND reject_cause = #{rejectCause,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="hisId != null" >
+				<![CDATA[ AND his_id = #{hisId,jdbcType=BIGINT} ]]>
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCheckInformation" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索审核信息表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_check_information
+		<include refid="whereSQL" />
+		ORDER BY pro_id
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索审核信息表的记录数量
+		-->
+		select count(*) from sys_check_information
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_information where id = #{id,jdbcType=BIGINT}
+	</delete>
+	
+	
+	<!-- 根据业务ID查询-->
+	<select id="queryListByBusId" parameterType="map" resultMap="SysCheckInformation">
+		select i.*,p.step,p.`name` as proName,p.dispatch_rule as dispatchRule from sys_check_information i,sys_check_process p where p.id = i.pro_id and  i.bus_id = #{busId,jdbcType=BIGINT}
+		<if test="checkResult != null and checkResult !='' " >
+			 and i.check_result = #{checkResult,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<!-- 查询由我审核的信息-->
+	<select id="getListByCheckPeople" resultMap="SysCheckInformation" parameterType="map" >
+		select i.*,p.step,p.`name` as proName,p.dispatch_rule as dispatchRule from sys_check_information i,sys_check_process p where p.id = i.pro_id and  i.check_people_id = #{checkPeopleId,jdbcType=VARCHAR}
+		<if test="checkResult != null and checkResult !='' " >
+			and i.check_result = #{checkResult,jdbcType=VARCHAR}
+		</if>
+		order by i.create_time DESC
+	</select>
+	
+	<!-- 查询由我审核的信息记录数量-->
+	<select id="getCountByCheckPeople" resultType="java.lang.Integer" parameterType="map" >
+		select count(*) from sys_check_information i,sys_check_process p where p.id = i.pro_id and  i.check_people_id = #{checkPeopleId,jdbcType=VARCHAR}
+		<if test="checkResult != null and checkResult !='' " >
+			 and i.check_result = #{checkResult,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<!-- 根据当前登录人查询由我审核的业务ID -->
+	<select id="findBusIdByUserId" resultType="java.lang.Long">
+		select DISTINCT i.bus_id from sys_check_information i where i.check_people_id = #{userId,jdbcType=BIGINT}
+		<if test="checkResult != null and checkResult !='' " >
+			 and i.check_result = #{checkResult,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<!--根据流程ID和业务ID删除 -->
+	<delete id="deleteByProIdAndBusId"  parameterType="map">
+		delete from sys_check_information where pro_id =#{proId,jdbcType=BIGINT} and bus_id=#{busId,jdbcType=BIGINT}
+	</delete>
+	
+	
+	<!-- 根据当前登录人和状态查询当前由我审核的且上级审核通过的业务列表 -->
+	<select id="getMyCheckingBusIdListByPrePass" resultType="java.lang.Long">
+		select DISTINCT t.bus_id from sys_check_information t where t.check_people_id  = #{userId,jdbcType=BIGINT} and t.check_result = #{checkResult,jdbcType=VARCHAR}
+		and t.bus_id in (
+			select ta.bus_id from sys_check_information ta where  ta.check_result=1 and ta.pro_id in (
+			   select cp2.id from sys_check_process cp2 where 1=1 and (
+					<foreach collection="mycpresplist" item="r" open="(" close=")" separator=" or ">
+					      (cp2.step= #{r.step} and cp2.config_id=#{r.configId} and cp2.version=#{r.version} )
+				    </foreach>)
+			) 
+		)
+	</select>
+	
+	<!-- 根据当前登录人和状态查询当前由我审核的MyStep0且上级审核通过的业务列表 -->
+	<select id="getMyStep0CheckingBusIdListByPrePass" resultType="java.lang.Long">
+		select DISTINCT t.bus_id from sys_check_information t where t.check_people_id  = #{userId,jdbcType=BIGINT} and t.check_result = #{checkResult,jdbcType=VARCHAR}
+		and t.bus_id in (
+			select ta.bus_id from sys_check_information ta where  ta.check_result=0 and ta.pro_id in (
+			   select cp2.id from sys_check_process cp2 where 1=1 and (
+					<foreach collection="mycpresplist" item="r" open="(" close=")" separator=" or ">
+					      (cp2.step= #{r.step} and cp2.config_id=#{r.configId} and cp2.version=#{r.version} )
+				    </foreach>)
+			) 
+		)
+	</select>
+	
+	<!-- 查询审核信息中有不通过的业务 -->
+	<select id="getCheckResult2BusId" resultType="java.lang.Long">
+		select bus_id from sys_check_information where bus_id in
+			<foreach collection="busIdList" item="list" open="(" close=")" separator=" , ">
+					#{list}
+			</foreach>
+			and check_result=2
+	</select>
+	
+	
+</mapper>

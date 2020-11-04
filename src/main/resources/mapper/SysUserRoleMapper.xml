@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysUserRoleMapper">
+	<resultMap id="SysUserRole" type="com.wangxinenpu.springbootdemo.dataobject.po.SysUserRole">
+		<!--
+		  @haoxz11MyBatis
+		  用户角色对照表
+		-->
+		<result column="user_id" jdbcType="VARCHAR" property="userId" />
+		<result column="role_id" jdbcType="VARCHAR" property="roleId" />
+		<result column="org_id" jdbcType="BIGINT" property="orgId" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+		<result column="dispatchauth" jdbcType="VARCHAR" property="dispatchauth" />
+		<result column="prseno" jdbcType="BIGINT" property="prseno" />
+	</resultMap>
+	<insert id="insertSysUserRole" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysUserRole">
+		<!--
+		  @haoxz11MyBatis
+		  插入用户角色对照记录
+		-->
+		<![CDATA[
+		insert into sys_user_role (user_id, role_id,org_id, create_time, modify_time, 
+			dispatchauth,prseno)
+		values (#{userId,jdbcType=VARCHAR}, #{roleId,jdbcType=VARCHAR},#{orgId,jdbcType=BIGINT}, sysdate(), sysdate(), 
+			#{dispatchauth,jdbcType=VARCHAR},#{prseno,jdbcType=BIGINT})
+		]]>
+	</insert>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysUserRole">
+		<!--
+		  @haoxz11MyBatis
+		  搜索用户角色对照列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_user_role
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索用户角色对照的记录数量
+		-->
+		select count(*) from sys_user_role
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索用户角色对照记录，可修改
+		-->
+		<where>
+			<if test="userId != null">
+				<![CDATA[ AND user_id = #{userId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="roleId != null">
+				<![CDATA[ AND role_id = #{roleId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgId != null">
+				<![CDATA[ AND org_id = #{orgId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="dispatchauth != null">
+				<![CDATA[ AND dispatchauth = #{dispatchauth,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+	<!-- 根据角色ID删除 -->
+	<delete id="deleteByRoleId" parameterType="java.lang.String">
+    	delete from sys_user_role where role_id = #{roleId,jdbcType=VARCHAR}
+  	</delete>
+  	
+  	<!-- 根据用户ID删除 -->
+	<delete id="deleteByUserId" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysUserRole">
+    	delete from sys_user_role where user_id = #{userId,jdbcType=VARCHAR}
+  	</delete>
+  	
+  	<!-- 根据用户id查询 -->
+  	<select id="findByUserId" parameterType="java.lang.String" resultMap="SysUserRole">
+		select * from sys_user_role where user_id = #{userId,jdbcType=VARCHAR}
+	</select>
+	<!-- 根据角色id查询 -->
+  	<select id="findByRoleId" parameterType="java.lang.String" resultMap="SysUserRole">
+		select * from sys_user_role where role_id = #{roleId,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 批量新增 -->
+	<insert id="insertByBatch" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysUserRole">
+		insert into sys_user_role (user_id, role_id,org_id, create_time, modify_time, prseno)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+            (#{item.userId,jdbcType=VARCHAR}, #{item.roleId,jdbcType=VARCHAR},#{item.orgId,jdbcType=BIGINT},sysdate(), sysdate(), #{item.prseno,jdbcType=BIGINT})
+        </foreach>
+	</insert>
+
+
+	<insert id="saveUserRole">
+		insert into sys_user_role (user_id, role_id,org_id, create_time, modify_time)
+		values
+		<foreach collection="sysUserRoleDTOS" item="sysUserRoleDTO" separator=",">
+			(#{sysUserRoleDTO.userId},#{sysUserRoleDTO.roleId},#{sysUserRoleDTO.orgId},sysdate(), sysdate())
+		</foreach>
+	</insert>
+
+
+</mapper>

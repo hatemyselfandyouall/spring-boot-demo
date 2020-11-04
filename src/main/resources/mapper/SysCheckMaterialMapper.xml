@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckMaterialMapper" >
+	<resultMap id="SysCheckMaterial" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckMaterial" >
+		<!--
+		  @haoxz11MyBatis
+		  审核资料表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="word_count" property="wordCount" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="pro_id" property="proId" jdbcType="BIGINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="his_id" property="hisId" jdbcType="BIGINT" />
+	</resultMap>
+	<insert id="insertSysCheckMaterial" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckMaterial" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入审核资料表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_material (`name`, word_count, content, 
+			pro_id,his_id, create_time, modify_time)
+		values (#{name,jdbcType=VARCHAR}, #{wordCount,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, 
+			#{proId,jdbcType=BIGINT},#{hisId,jdbcType=BIGINT}, sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysCheckMaterial" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckMaterial" >
+		<!--
+		  @haoxz11MyBatis
+		  更新审核资料表记录
+		-->
+		update sys_check_material
+		<set >
+			<if test="name != null" >
+				`name` = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="wordCount != null" >
+				word_count = #{wordCount,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null" >
+				content = #{content,jdbcType=VARCHAR},
+			</if>
+			<if test="proId != null" >
+				pro_id = #{proId,jdbcType=BIGINT},
+			</if>
+			<if test="hisId != null" >
+				his_id = #{hisId,jdbcType=BIGINT},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckMaterial" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询审核资料表记录
+		-->
+		select  * from sys_check_material where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索审核资料表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="name != null" >
+				<![CDATA[ AND `name` = #{name,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="wordCount != null" >
+				<![CDATA[ AND word_count = #{wordCount,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="content != null" >
+				<![CDATA[ AND content = #{content,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="proId != null" >
+				<![CDATA[ AND pro_id = #{proId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="hisId != null" >
+				<![CDATA[ AND his_id = #{hisId,jdbcType=BIGINT} ]]>
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCheckMaterial" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索审核资料表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_check_material
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索审核资料表的记录数量
+		-->
+		select count(*) from sys_check_material
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_material where id = #{id,jdbcType=BIGINT}
+	</delete>
+	
+	<!--根据用proId删除 -->
+	<delete id="deleteByProId"  parameterType="java.lang.Long">
+		delete from sys_check_material where pro_id = #{proId,jdbcType=BIGINT}
+	</delete>
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysOrgSystemMapper" >
+	<resultMap id="SysOrgSystem" type="com.wangxinenpu.springbootdemo.dataobject.po.SysOrgSystem" >
+		<!--
+		  @haoxz11MyBatis
+		  机构险种表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="org_id" property="orgId" jdbcType="BIGINT" />
+		<result column="system_id" property="systemId" jdbcType="BIGINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertOrgSystem" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysOrgSystem" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入机构系统表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_org_system (org_id, system_id, create_time, modify_time)
+		values (#{orgId,jdbcType=BIGINT}, #{systemId,jdbcType=BIGINT}, sysdate(), sysdate())
+		]]>
+	</insert>
+
+	<!-- 根据机构ID删除 -->
+	<delete id="deleteByOrgId" parameterType="java.lang.Long">
+    	delete from sys_org_system where org_id = #{orgId,jdbcType=BIGINT}
+  	</delete>
+
+	<!-- 根据机构ID查询 -->
+	<select id="findByOrgId" parameterType="java.lang.Long" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.orgSystem.SysOrgSystemDto">
+				select  o.id,
+			o.system_id as systemId, o.org_id as orgId,
+		o.create_time as createTime,o.modify_time as modifyTime,
+		s.system_Name as systemName from sys_org_system as o,system_manage as s where  o.org_id = #{orgId,jdbcType=BIGINT} and o.system_id = s.id
+	</select>
+
+	<select id="findListVoByOrgId" parameterType="java.lang.Long" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.systemManage.SystemManageListVo">
+				select  s.id,s.menu_Address as menuAddress,
+				s.channel_Code as channelCode,s.access_Way as accessWay,
+				s.system_Name as systemName,s.system_Address as systemAddress,
+		s.system_Name as systemName from sys_org_system as o,system_manage as s where  o.org_id = #{orgId,jdbcType=BIGINT} and o.system_id = s.id
+	</select>
+</mapper>

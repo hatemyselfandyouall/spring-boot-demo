@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckConfigMapper" >
+	<resultMap id="SysCheckConfig" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckConfig" >
+		<!--
+		  @haoxz11MyBatis
+		  审核权限配置表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="fun_id" property="funId" jdbcType="BIGINT" />
+		<result column="fun_name" property="funName" jdbcType="VARCHAR" />
+		<result column="is_leading" property="isLeading" jdbcType="VARCHAR" />
+		<result column="is_reject" property="isReject" jdbcType="VARCHAR" />
+		<result column="is_pro_repeat" property="isProRepeat" jdbcType="VARCHAR" />
+		<result column="org_id" property="orgId" jdbcType="BIGINT"/>
+		<result column="au_flag" property="auFlag" jdbcType="VARCHAR"/>
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="check_lv" property="checkLv" jdbcType="VARCHAR"/>
+	</resultMap>
+	<insert id="insertSysCheckConfig" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckConfig" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入审核权限配置表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_config (fun_id, fun_name, is_leading, is_reject,is_pro_repeat,org_id,au_flag,create_time, modify_time,check_lv)
+		values (#{funId,jdbcType=BIGINT}, #{funName,jdbcType=VARCHAR}, #{isLeading,jdbcType=VARCHAR},#{isReject,jdbcType=VARCHAR},
+		#{isProRepeat,jdbcType=VARCHAR}, #{orgId,jdbcType=BIGINT},#{auFlag,jdbcType=VARCHAR},  sysdate(), sysdate(),#{checkLv,jdbcType=VARCHAR})
+		]]>
+	</insert>
+	<update id="updateSysCheckConfig" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckConfig" >
+		<!--
+		  @haoxz11MyBatis
+		  更新审核权限配置表记录
+		-->
+		update sys_check_config
+		<set >
+			<if test="funId != null" >
+				fun_id = #{funId,jdbcType=BIGINT},
+			</if>
+			<if test="funName != null" >
+				fun_name = #{funName,jdbcType=VARCHAR},
+			</if>
+			<if test="isLeading != null" >
+				is_leading = #{isLeading,jdbcType=VARCHAR},
+			</if>
+			<if test="isReject != null" >
+				is_reject = #{isReject,jdbcType=VARCHAR},
+			</if>
+			<if test="isProRepeat != null" >
+				is_pro_repeat = #{isProRepeat,jdbcType=VARCHAR},
+			</if>
+			<if test="orgId != null">
+				org_id = #{orgId,jdbcType=BIGINT},
+			</if>
+			<if test="auFlag != null">
+				au_flag = #{auFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="checkLv != null">
+				check_lv = #{checkLv,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckConfig" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询审核权限配置表记录
+		-->
+		select  * from sys_check_config where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索审核权限配置表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="funId != null" >
+				<![CDATA[ AND fun_id = #{funId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="funName != null" >
+				<![CDATA[ AND fun_name = #{funName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="isLeading != null" >
+				<![CDATA[ AND is_leading = #{isLeading,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="isReject != null" >
+				<![CDATA[ AND is_reject = #{isReject,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="isProRepeat != null" >
+				<![CDATA[ AND is_pro_repeat = #{isProRepeat,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgId != null">
+				<![CDATA[ AND org_id = #{orgId,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="auFlag != null">
+				<![CDATA[ AND au_flag = #{auFlag,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="checkLv != null">
+				<![CDATA[ AND check_lv = #{checkLv,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCheckConfig" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索审核权限配置表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_check_config
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索审核权限配置表的记录数量
+		-->
+		select count(*) from sys_check_config
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_config where id = #{id,jdbcType=BIGINT}
+	</delete>
+	
+	<!--
+		  @haoxz11MyBatis
+		 批量修改
+		-->
+	<update id="updateByBatch" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckConfig" >
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+        	update sys_check_config
+	        <set >
+				<if test="item.funId != null" >
+					fun_id = #{item.funId,jdbcType=BIGINT},
+				</if>
+				<if test="item.funName != null" >
+					fun_name = #{item.funName,jdbcType=VARCHAR},
+				</if>
+				<if test="item.isLeading != null" >
+					is_leading = #{item.isLeading,jdbcType=VARCHAR},
+				</if>
+				<if test="item.isReject != null" >
+					is_reject = #{item.isReject,jdbcType=VARCHAR},
+				</if>
+				<if test="item.isProRepeat != null" >
+					is_pro_repeat = #{item.isProRepeat,jdbcType=VARCHAR},
+				</if>
+				<if test="item.orgId != null">
+					org_id = #{item.orgId,jdbcType=BIGINT},
+				</if>
+				<if test="item.auFlag != null">
+					au_flag = #{item.auFlag,jdbcType=VARCHAR},
+				</if>
+				<if test="item.checkLv != null">
+					check_lv = #{item.checkLv,jdbcType=VARCHAR},
+				</if>
+				modify_time = sysdate()
+			</set>
+			where id = #{item.id,jdbcType=BIGINT}
+    	</foreach> 
+	</update>
+</mapper>

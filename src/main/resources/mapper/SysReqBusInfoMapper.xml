@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysReqBusInfoMapper" >
+	<resultMap id="SysReqBusInfo" type="com.wangxinenpu.springbootdemo.dataobject.po.SysReqBusInfo" >
+		<!--
+		  @haoxz11MyBatis
+		  区域表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="projid" property="projid" jdbcType="VARCHAR" />
+		<result column="req_time" property="reqTime" jdbcType="TIMESTAMP" />
+		<result column="beg_time" property="begTime" jdbcType="TIMESTAMP" />
+		<result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+		<result column="message" property="message" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysReqBusInfo" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysReqBusInfo" >
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_req_bus_info (projid, req_time, 
+			beg_time, end_time, message,create_time, modify_time)
+		values (#{projid,jdbcType=VARCHAR}, #{reqTime,jdbcType=TIMESTAMP}, 
+			#{begTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{message,jdbcType=VARCHAR}, 
+			sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysReqBusInfo" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysReqBusInfo" >
+		update sys_req_bus_info
+		<set >
+			<if test="projid != null" >
+				projid = #{projid,jdbcType=VARCHAR},
+			</if>
+			<if test="reqTime != null" >
+				req_time = #{reqTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="begTime != null" >
+				beg_time = #{begTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="endTime != null" >
+				end_time = #{endTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="message != null" >
+				message = #{message,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysReqBusInfo" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询区域表记录
+		-->
+		select  * from sys_req_bus_info where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索区域表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="projid != null" >
+				<![CDATA[ AND projid = #{projid,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="reqTime != null" >
+				<![CDATA[ AND req_time = #{reqTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="begTime != null" >
+				<![CDATA[ AND beg_time = #{begTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="endTime != null" >
+				<![CDATA[ AND end_time = #{endTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="message != null" >
+				<![CDATA[ AND message = #{message,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysReqBusInfo" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索区域表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_req_bus_info
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索区域表的记录数量
+		-->
+		select count(*) from sys_req_bus_info
+		<include refid="whereSQL" />
+	</select>
+	
+
+</mapper>

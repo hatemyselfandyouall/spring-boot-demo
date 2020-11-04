@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckAssignMapper" >
+	<resultMap id="SysCheckAssign" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckAssign" >
+		<!--
+		  @haoxz11MyBatis
+		  审核任务指派表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="pro_id" property="proId" jdbcType="BIGINT" />
+		<result column="bus_id" property="busId" jdbcType="BIGINT" />
+		<result column="initiator_id" property="initiatorId" jdbcType="VARCHAR" />
+		<result column="initiator_name" property="initiatorName" jdbcType="VARCHAR" />
+		<result column="assignor_id" property="assignorId" jdbcType="VARCHAR" />
+		<result column="assignor_name" property="assignorName" jdbcType="VARCHAR" />
+		<result column="assign_time" property="assignTime" jdbcType="TIMESTAMP" />
+		<result column="assign_reason" property="assignReason" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="his_id" property="hisId" jdbcType="BIGINT" />
+	</resultMap>
+	<insert id="insertSysCheckAssign" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckAssign" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入审核任务指派表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_assign (pro_id,bus_id, initiator_id, initiator_name, assignor_id, assignor_name, 
+			assign_time, assign_reason,his_id, create_time, modify_time
+			)
+		values (#{proId,jdbcType=BIGINT},#{busId,jdbcType=BIGINT}, #{initiatorId,jdbcType=VARCHAR}, #{initiatorName,jdbcType=VARCHAR}, #{assignorId,jdbcType=VARCHAR}, #{assignorName,jdbcType=VARCHAR}, 
+			#{assignTime,jdbcType=TIMESTAMP}, #{assignReason,jdbcType=VARCHAR},#{hisId,jdbcType=BIGINT}, sysdate(), sysdate()
+			)
+		]]>
+	</insert>
+	<update id="updateSysCheckAssign" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckAssign" >
+		<!--
+		  @haoxz11MyBatis
+		  更新审核任务指派表记录
+		-->
+		update sys_check_assign
+		<set >
+			<if test="proId != null" >
+				pro_id = #{proId,jdbcType=BIGINT},
+			</if>
+			<if test="busId != null" >
+				bus_id = #{busId,jdbcType=BIGINT},
+			</if>
+			<if test="initiatorId != null" >
+				initiator_id = #{initiatorId,jdbcType=VARCHAR},
+			</if>
+			<if test="initiatorName != null" >
+				initiator_name = #{initiatorName,jdbcType=VARCHAR},
+			</if>
+			<if test="assignorId != null" >
+				assignor_id = #{assignorId,jdbcType=VARCHAR},
+			</if>
+			<if test="assignorName != null" >
+				assignor_name = #{assignorName,jdbcType=VARCHAR},
+			</if>
+			<if test="assignTime != null" >
+				assign_time = #{assignTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="assignReason != null" >
+				assign_reason = #{assignReason,jdbcType=VARCHAR},
+			</if>
+			<if test="hisId != null" >
+				his_id = #{hisId,jdbcType=BIGINT},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckAssign" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询审核任务指派表记录
+		-->
+		select  * from sys_check_assign where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索审核任务指派表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="proId != null" >
+				<![CDATA[ AND pro_id = #{proId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="busId != null" >
+				<![CDATA[ AND bus_id = #{busId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="assignorId != null" >
+				<![CDATA[ AND assignor_id = #{assignorId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="assignorName != null" >
+				<![CDATA[ AND assignor_name = #{assignorName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="assignTime != null" >
+				<![CDATA[ AND assign_time = #{assignTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="assignReason != null" >
+				<![CDATA[ AND assign_reason = #{assignReason,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="hisId != null" >
+				<![CDATA[ AND his_id = #{hisId,jdbcType=BIGINT} ]]>
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCheckAssign" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索审核任务指派表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_check_assign
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索审核任务指派表的记录数量
+		-->
+		select count(*) from sys_check_assign
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_assign where id = #{id,jdbcType=BIGINT}
+	</delete>
+</mapper>

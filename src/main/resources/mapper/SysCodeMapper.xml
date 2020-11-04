@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCodeMapper" >
+	<resultMap id="SysCode" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCode" >
+		<!--
+		  @haoxz11MyBatis
+		  代码维护表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="code_type" property="codeType" jdbcType="VARCHAR" />
+		<result column="code_value" property="codeValue" jdbcType="VARCHAR" />
+		<result column="code_name" property="codeName" jdbcType="VARCHAR" />
+		<result column="parameter_sort" property="parameterSort" jdbcType="VARCHAR" />
+		<result column="effective_sign" property="effectiveSign" jdbcType="INTEGER" />
+		<result column="maintain_sign" property="maintainSign" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysCode" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCode" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入代码维护表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_code (code_type, code_value, code_name, 
+			parameter_sort, effective_sign, maintain_sign, 
+			create_time, modify_time)
+		values (#{codeType,jdbcType=VARCHAR}, #{codeValue,jdbcType=VARCHAR}, #{codeName,jdbcType=VARCHAR}, 
+			#{parameterSort,jdbcType=VARCHAR}, #{effectiveSign,jdbcType=INTEGER}, #{maintainSign,jdbcType=INTEGER}, 
+			sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysCode" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCode" >
+		<!--
+		  @haoxz11MyBatis
+		  更新代码维护表记录
+		-->
+		update sys_code
+		<set >
+			<if test="codeType != null" >
+				code_type = #{codeType,jdbcType=VARCHAR},
+			</if>
+			<if test="codeValue != null" >
+				code_value = #{codeValue,jdbcType=VARCHAR},
+			</if>
+			<if test="codeName != null" >
+				code_name = #{codeName,jdbcType=VARCHAR},
+			</if>
+			<if test="parameterSort != null" >
+				parameter_sort = #{parameterSort,jdbcType=VARCHAR},
+			</if>
+			<if test="effectiveSign != null" >
+				effective_sign = #{effectiveSign,jdbcType=INTEGER},
+			</if>
+			<if test="maintainSign != null" >
+				maintain_sign = #{maintainSign,jdbcType=INTEGER},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCode" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询代码维护表记录
+		-->
+		select  * from sys_code where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索代码维护表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="codeType != null" >
+				<![CDATA[ AND code_type like concat('%',#{codeType,jdbcType=VARCHAR},'%')]]> 
+			</if>
+			<if test="codeValue != null" >
+				<![CDATA[ AND code_value = #{codeValue,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="codeName != null" >
+				<![CDATA[ AND code_name like concat('%',#{codeName,jdbcType=VARCHAR},'%')]]> 
+			</if>
+			<if test="parameterSort != null and parameterSort != ''" >
+				<![CDATA[ AND parameter_sort like concat('%',#{parameterSort,jdbcType=VARCHAR},'%')]]> 
+			</if>
+			<if test="effectiveSign != null and effectiveSign !=''" >
+				<![CDATA[ AND effective_sign = #{effectiveSign,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="maintainSign != null and maintainSign !=''" >
+				<![CDATA[ AND maintain_sign = #{maintainSign,jdbcType=INTEGER} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCode" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索代码维护表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_code
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索代码维护表的记录数量
+		-->
+		select count(*) from sys_code
+		<include refid="whereSQL" />
+	</select>
+	
+	<!-- 根据代码类型查询 -->
+	<select id="findByCodeType" parameterType="java.lang.String" resultMap="SysCode">
+		select  * from sys_code where code_type = #{codeType,jdbcType=VARCHAR}
+	</select>
+
+	<select id="findByCodeName" parameterType="java.lang.String" resultMap="SysCode">
+		select  * from sys_code where code_name = #{code_name,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 代码维护删除 -->
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    	delete from sys_code where id = #{id,jdbcType=BIGINT}
+  	</delete>
+  	
+  	<!-- 查询相同类型代码值是否重复-->
+  	<select id="findByCodeTypeAndCodeValue" parameterType="map" resultMap="SysCode">
+		select * from sys_code a
+		<where>
+			<if test="codeType!=null and  codeType!='' ">
+				a.code_type= #{codeType,jdbcType=VARCHAR}
+			</if>
+			<if test="codeValue!=null and  codeValue!='' ">
+				and a.code_value= #{codeValue,jdbcType=VARCHAR}
+			</if>
+			<if test="id!=null and  id!='' ">
+				and a.id != #{id,jdbcType=BIGINT}
+			</if>
+		</where>
+	</select>
+</mapper>

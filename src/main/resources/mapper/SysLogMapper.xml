@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysLogMapper">
+	<resultMap id="SysLog" type="com.wangxinenpu.springbootdemo.dataobject.po.SysLog">
+		<!--
+		  @haoxz11MyBatis
+		  系统日志表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="function_id" jdbcType="BIGINT" property="functionId" />
+		<result column="event_type" jdbcType="VARCHAR" property="eventType" />
+		<result column="content" jdbcType="VARCHAR" property="content" />
+		<result column="occur_time" jdbcType="TIMESTAMP" property="occurTime" />
+		<result column="user_id" jdbcType="BIGINT" property="userId" />
+		<result column="operatelog_id" jdbcType="VARCHAR" property="operatelogId" />
+		<result column="logon_ip" jdbcType="VARCHAR" property="logonIp" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	</resultMap>
+	<insert id="insertSysLog" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysLog">
+		<!--
+		  @haoxz11MyBatis
+		  插入系统日志记录
+		-->
+		<![CDATA[
+		insert into sys_log (id, function_id, event_type, 
+			content, occur_time, user_id, 
+			operatelog_id, logon_ip, create_time, modify_time
+			)
+		values (#{id,jdbcType=BIGINT}, #{functionId,jdbcType=BIGINT}, #{eventType,jdbcType=VARCHAR}, 
+			#{content,jdbcType=VARCHAR}, #{occurTime,jdbcType=TIMESTAMP}, #{userId,jdbcType=BIGINT}, 
+			#{operatelogId,jdbcType=VARCHAR}, #{logonIp,jdbcType=VARCHAR}, sysdate(), sysdate()
+			)
+		]]>
+	</insert>
+	<update id="updateSysLog" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysLog">
+		<!--
+		  @haoxz11MyBatis
+		  更新系统日志记录
+		-->
+		update sys_log
+		<set>
+			<if test="functionId != null">
+				function_id = #{functionId,jdbcType=BIGINT},
+			</if>
+			<if test="eventType != null">
+				event_type = #{eventType,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				content = #{content,jdbcType=VARCHAR},
+			</if>
+			<if test="occurTime != null">
+				occur_time = #{occurTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="userId != null">
+				user_id = #{userId,jdbcType=BIGINT},
+			</if>
+			<if test="operatelogId != null">
+				operatelog_id = #{operatelogId,jdbcType=VARCHAR},
+			</if>
+			<if test="logonIp != null">
+				logon_ip = #{logonIp,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.Long" resultMap="SysLog">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询系统日志记录
+		-->
+		select  * from sys_log where id = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysLog">
+		<!--
+		  @haoxz11MyBatis
+		  搜索系统日志列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_log
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索系统日志的记录数量
+		-->
+		select count(*) from sys_log
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索系统日志记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="functionId != null">
+				<![CDATA[ AND function_id = #{functionId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="eventType != null">
+				<![CDATA[ AND event_type = #{eventType,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="content != null">
+				<![CDATA[ AND content = #{content,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="occurTime != null">
+				<![CDATA[ AND occur_time = #{occurTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="userId != null">
+				<![CDATA[ AND user_id = #{userId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="operatelogId != null">
+				<![CDATA[ AND operatelog_id = #{operatelogId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="logonIp != null">
+				<![CDATA[ AND logon_ip = #{logonIp,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+</mapper>

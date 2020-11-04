@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysOrgMapper">
+	<resultMap id="SysOrg" type="com.wangxinenpu.springbootdemo.dataobject.po.SysOrg">
+		<!--
+		  @haoxz11MyBatis
+		  系统机构表表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="org_name" jdbcType="VARCHAR" property="orgName" />
+		<result column="orgenter_code" jdbcType="VARCHAR" property="orgenterCode" />
+		<result column="parent_id" jdbcType="BIGINT" property="parentId" />
+		<result column="short_name" jdbcType="VARCHAR" property="shortName" />
+		<result column="region_code" jdbcType="VARCHAR" property="regionCode" />
+		<result column="leader" jdbcType="VARCHAR" property="leader" />
+		<result column="linkman" jdbcType="VARCHAR" property="linkman" />
+		<result column="tel" jdbcType="VARCHAR" property="tel" />
+		<result column="org_addr" jdbcType="VARCHAR" property="orgAddr" />
+		<result column="org_desc" jdbcType="VARCHAR" property="orgDesc" />
+		<result column="org_order" jdbcType="INTEGER" property="orgOrder" />
+		<result column="org_state" jdbcType="VARCHAR" property="orgState" />
+		<result column="superdept" jdbcType="VARCHAR" property="superdept" />
+		<result column="orgauto_code" jdbcType="VARCHAR" property="orgautoCode" />
+		<result column="zip" jdbcType="VARCHAR" property="zip" />
+		<result column="idpath" jdbcType="VARCHAR" property="idpath" />
+		<result column="type" jdbcType="INTEGER" property="type" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+		<result column="org_code" jdbcType="VARCHAR" property="orgCode" />
+		<result column="uuid" jdbcType="VARCHAR" property="uuid" />
+		<result column="org_type" jdbcType="VARCHAR" property="orgType" />
+		<result column="yth_region_code" jdbcType="VARCHAR" property="ythRegionCode" />
+		<result column="org_tag" jdbcType="VARCHAR" property="orgTag" />
+		<result column="is_synchronization" jdbcType="INTEGER" property="isSynchronization" />
+	</resultMap>
+	<insert id="insertSysOrg" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysOrg">
+		<!--
+		  @haoxz11MyBatis
+		  插入系统机构表记录
+		-->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_org (org_name, orgenter_code, 
+			parent_id, short_name, region_code, 
+			leader, linkman, tel, 
+			org_addr, org_desc, org_order, 
+			org_state, superdept, orgauto_code, 
+			zip, idpath,type, create_time, modify_time,org_code,uuid,org_type,yth_region_code,org_tag,is_synchronization)
+		values (#{orgName,jdbcType=VARCHAR}, #{orgenterCode,jdbcType=VARCHAR}, 
+			#{parentId,jdbcType=BIGINT}, #{shortName,jdbcType=VARCHAR}, #{regionCode,jdbcType=VARCHAR}, 
+			#{leader,jdbcType=VARCHAR}, #{linkman,jdbcType=VARCHAR}, #{tel,jdbcType=VARCHAR}, 
+			#{orgAddr,jdbcType=VARCHAR}, #{orgDesc,jdbcType=VARCHAR}, #{orgOrder,jdbcType=INTEGER}, 
+			#{orgState,jdbcType=VARCHAR}, #{superdept,jdbcType=VARCHAR}, #{orgautoCode,jdbcType=VARCHAR}, 
+			#{zip,jdbcType=VARCHAR}, #{idpath,jdbcType=VARCHAR},#{type,jdbcType=INTEGER}, sysdate(), sysdate(),
+			#{orgCode,jdbcType=VARCHAR},#{uuid,jdbcType=VARCHAR},#{orgType,jdbcType=VARCHAR},
+			#{ythRegionCode,jdbcType=VARCHAR},#{orgTag,jdbcType=VARCHAR},#{isSynchronization,jdbcType=INTEGER})
+		]]>
+	</insert>
+	<update id="updateSysOrg" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysOrg">
+		<!--
+		  @haoxz11MyBatis
+		  更新系统机构表记录
+		-->
+		update sys_org
+		<set>
+			<if test="orgName != null and orgName != ''">
+				org_name = #{orgName,jdbcType=VARCHAR},
+			</if>
+			<if test="orgenterCode != null and orgenterCode != ''">
+				orgenter_code = #{orgenterCode,jdbcType=VARCHAR},
+			</if>
+			<if test="parentId != null">
+				parent_id = #{parentId,jdbcType=BIGINT},
+			</if>
+			<if test="shortName != null and shortName != ''">
+				short_name = #{shortName,jdbcType=VARCHAR},
+			</if>
+			<if test="regionCode != null and regionCode != ''">
+				region_code = #{regionCode,jdbcType=VARCHAR},
+			</if>
+			<if test="leader != null and leader != ''">
+				leader = #{leader,jdbcType=VARCHAR},
+			</if>
+			<if test="linkman != null and linkman != ''">
+				linkman = #{linkman,jdbcType=VARCHAR},
+			</if>
+			<if test="tel != null and tel != '' ">
+				tel = #{tel,jdbcType=VARCHAR},
+			</if>
+			<if test="orgAddr != null and orgAddr != '' ">
+				org_addr = #{orgAddr,jdbcType=VARCHAR},
+			</if>
+			<if test="orgDesc != null and orgDesc != ''">
+				org_desc = #{orgDesc,jdbcType=VARCHAR},
+			</if>
+			<if test="orgOrder != null">
+				org_order = #{orgOrder,jdbcType=INTEGER},
+			</if>
+			<if test="orgState != null and orgState != '' ">
+				org_state = #{orgState,jdbcType=VARCHAR},
+			</if>
+			<if test="superdept != null and superdept != ''">
+				superdept = #{superdept,jdbcType=VARCHAR},
+			</if>
+			<if test="orgautoCode != null and orgautoCode != ''">
+				orgauto_code = #{orgautoCode,jdbcType=VARCHAR},
+			</if>
+			<if test="zip != null and zip != ''">
+				zip = #{zip,jdbcType=VARCHAR},
+			</if>
+			<if test="idpath != null and idpath != '' ">
+				idpath = #{idpath,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				type = #{type,jdbcType=INTEGER},
+			</if>
+			<if test="orgCode != null and orgCode != ''">
+				org_code = #{orgCode,jdbcType=VARCHAR},
+			</if>
+			<if test="uuid != null and uuid != ''">
+				uuid = #{uuid,jdbcType=VARCHAR},
+			</if>
+			<if test="orgType != null and orgType != ''">
+				org_type = #{orgType,jdbcType=VARCHAR},
+			</if>
+			<if test="ythRegionCode != null and ythRegionCode != ''">
+				yth_region_code = #{ythRegionCode,jdbcType=VARCHAR},
+			</if>
+			<if test="orgTag != null and orgTag != ''">
+				org_tag = #{orgTag,jdbcType=VARCHAR},
+			</if>
+			<if test="isSynchronization != null">
+				is_synchronization = #{isSynchronization,jdbcType=INTEGER},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.Long" resultMap="SysOrg">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询系统机构表记录
+		-->
+		select  * from sys_org where id = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysOrg">
+		<!--
+		  @haoxz11MyBatis
+		  搜索系统机构表列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_org
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索系统机构表的记录数量
+		-->
+		select count(*) from sys_org
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索系统机构表记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="orgName != null">
+				<![CDATA[ AND org_name = #{orgName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgenterCode != null">
+				<![CDATA[ AND orgenter_code = #{orgenterCode,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="parentId != null">
+				<![CDATA[ AND parent_id = #{parentId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="shortName != null">
+				<![CDATA[ AND short_name = #{shortName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="regionCode != null">
+				<![CDATA[ AND region_code = #{regionCode,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="leader != null">
+				<![CDATA[ AND leader = #{leader,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="linkman != null">
+				<![CDATA[ AND linkman = #{linkman,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="tel != null">
+				<![CDATA[ AND tel = #{tel,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgAddr != null">
+				<![CDATA[ AND org_addr = #{orgAddr,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgDesc != null">
+				<![CDATA[ AND org_desc = #{orgDesc,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgOrder != null">
+				<![CDATA[ AND org_order = #{orgOrder,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="orgState != null and  orgState!='' ">
+				<![CDATA[ AND org_state = #{orgState,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="uuid != null">
+				<![CDATA[ AND uuid = #{uuid,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="superdept != null">
+				<![CDATA[ AND superdept = #{superdept,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgautoCode != null">
+				<![CDATA[ AND orgauto_code = #{orgautoCode,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="zip != null">
+				<![CDATA[ AND zip = #{zip,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="idpath != null">
+				<![CDATA[ AND idpath = #{idpath,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="type != null">
+				<![CDATA[ AND type = #{type,jdbcType=INTEGER} ]]>
+			</if>
+			<if test="types != null">
+				<![CDATA[ AND type != #{types,jdbcType=INTEGER} ]]>
+			</if>
+			<if test="regionCodeLike != null">
+				<![CDATA[ AND region_Code like concat('%',#{regionCodeLike},'%') ]]>
+			</if>
+			<if test="ythRegionCode != null and  ythRegionCode!='' ">
+				<![CDATA[ AND yth_region_code = #{ythRegionCode,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="orgTag != null and  orgTag!='' ">
+				<![CDATA[ AND org_tag = #{orgTag,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="isSynchronization != null">
+				<![CDATA[ AND is_synchronization = #{isSynchronization,jdbcType=INTEGER} ]]> 
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 根据区域ID查询机构列表 -->
+	<select id="findByRegioncode" parameterType="java.lang.String" resultMap="SysOrg">
+		select  * from sys_org where region_code = #{regionCode,jdbcType=VARCHAR} and org_state=1 and type =1
+	</select>
+	
+	<!-- 根据idpath查询机构 -->
+	<select id="findByIdpath" parameterType="java.lang.String" resultMap="SysOrg">
+		select  * from sys_org where idpath like concat('%',#{idpath,jdbcType=VARCHAR},'%') and org_state=1 and type =1
+	</select>
+	
+	<!-- 根据ID查询下级机构 -->
+	<select id="findByParentId" parameterType="java.lang.Long" resultMap="SysOrg">
+		select  * from sys_org where parent_id = #{id,jdbcType=BIGINT} and org_state=1 and type =1
+	</select>
+	
+	<!-- 根据机构名称，机构代码查询是否存在 -->
+	<select id="checkOrgNameOrgenterCode" parameterType="map" resultMap="SysOrg">
+		select  * from sys_org where org_name=#{orgName,jdbcType=VARCHAR} or region_code =#{orgenterCode,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 根据机构名称查询 -->
+	<select id="findByName" parameterType="java.lang.String" resultMap="SysOrg">
+		select  * from sys_org where org_name = #{orgName,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 根据机构名称模糊查询，只查询市 -->
+	<select id="findByNameLike" parameterType="java.lang.String" resultMap="SysOrg">
+		select  * from sys_org where org_name like concat('%',#{orgName,jdbcType=VARCHAR},'%') and org_state=1 and type =0
+	</select>
+	
+	<!--  查询所有机构不包含省本级下机构 -->
+	<select id="queryOrgListAll" parameterType="map" resultMap="SysOrg">
+		select * from sys_org o where o.org_state=1 and o.type=1 and o.parent_id !=271
+	</select>
+	
+	<!--  查询市下所有机构 -->
+	<select id="queryOrgListArea" parameterType="map" resultMap="SysOrg">
+		select * from sys_org where parent_id in(select id from sys_org  where
+		parent_id=(select id from sys_org where region_code = #{regionCode,jdbcType=VARCHAR} and type =0))and org_state=1 and type =1
+	</select>
+	
+	<!--  查询省本级下机构 -->
+	<select id="queryOrgListShenbenji" parameterType="map" resultMap="SysOrg">
+		select * from sys_org  where
+		parent_id=(select id from sys_org where region_code = #{regionCode,jdbcType=VARCHAR} and type =0) and org_state=1 and type =1
+	</select>
+	
+	<!-- 机构删除 -->
+	<update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    	update sys_org set org_state = 0 where id = #{id,jdbcType=BIGINT}
+  	</update>
+
+	<!-- 通过天正一体化id删除机构 -->
+	<update id="deleteByUUid" parameterType="java.lang.String">
+		update sys_org set org_state = 0 where uuid = #{uuid,jdbcType=VARCHAR}
+	</update>
+  	
+  	<!-- 通过行政区和险种获取机构信息 -->
+	<select id="findByAreaIdAndInsId" parameterType="map" resultMap="SysOrg">
+		select  * from sys_org o left join sys_orginstype t on o.id= t.org_id where o.region_code = #{areaId,jdbcType=VARCHAR} and o.org_state=1 and t.ins_id in (select id from sys_code where code_value =#{insId,jdbcType=BIGINT})
+	</select>
+	
+	<!-- 获取所有市下的机构 -->
+	<select id="findCityByRegionCode" parameterType="map" resultMap="SysOrg">
+		select * from sys_org o where o.parent_id = (select id from sys_org  where region_code = #{regionCode,jdbcType=VARCHAR} and type =0) and o.type=0;
+	</select>
+
+
+	<!-- 获取所有市下的机构 -->
+	<select id="findCityByParentId" resultMap="SysOrg">
+		select  * from sys_org where parent_id = #{parentId};
+	</select>
+
+	<!--  查询对应区域 -->
+	<select id="getByRegionCode"  resultMap="SysOrg">
+		select  * from sys_org where region_code = #{regionCode,jdbcType=VARCHAR} and  type=0;
+	</select>
+
+	<!-- 根据orgIds查询机构树-->
+	<select id="queryOrgListByOrgIds" parameterType="java.lang.String" resultMap="SysOrg">
+		select distinct o.* from sys_org o where o.id in(${orgIds}) order by id
+	</select>
+
+	<!-- 根据机构名称查询 -->
+	<select id="findByType" parameterType="java.lang.Integer" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysOrgDTO">
+		select a.org_name as orgName,a.orgenter_code as orgenterCode,a.short_name as shortName,a.parent_id as parentId,a.linkman as linkman,a.leader as leader,a.org_order as orgOrder,a.zip as zip,a.superdept as superdept,a.org_addr as orgAddr,a.org_desc as orgDesc,c.code_name as orgTypeName,d.area_name as areaName from sys_org a left outer join sys_orginstype b on a.id=b.org_id left outer join sys_code c on b.ins_id=c.id left outer join sys_area d on a.region_code=d.id where a.type=#{type} order by a.orgenter_code;
+	</select>
+
+	<!-- 根据机构统一信用代码查询机构名称 -->
+	<select id="queryOrgNameByOrgCode" parameterType="java.lang.String" resultMap="SysOrg">
+		select  * from sys_org where orgenter_code = #{orgCode,jdbcType=VARCHAR}
+	</select>
+
+    <!-- 同步机构代码 -->
+    <select id="getCountByMaxOrgId" resultType="int">
+		select count(1) from sys_org a where  a.modify_time>#{modifyTime}
+	</select>
+    <!-- 同步机构代码 -->
+    <select id="synchOrgListByMaxOrgId" resultMap="SysOrg">
+		select * from sys_org a where a.modify_time>#{modifyTime}
+	</select>
+
+	<!--查询时间段内的机构信息 -->
+	<select id="getlistByOrgUuids" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysOrgDTO">
+		select id,uuid from sys_org where create_time&gt;=#{startTime} and create_time&lt;=#{endTime}
+	</select>
+</mapper>

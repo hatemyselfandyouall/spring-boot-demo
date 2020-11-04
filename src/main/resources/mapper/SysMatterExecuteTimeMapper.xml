@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysMatterExecuteTimeMapper" >
+	<resultMap id="SysMatterExecuteTime" type="com.wangxinenpu.springbootdemo.dataobject.po.SysMatterExecuteTime" >
+		<!--
+		  @haoxz11MyBatis
+		  办理时间表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="config_id" property="configId" jdbcType="BIGINT" />
+		<result column="month" property="month" jdbcType="VARCHAR" />
+		<result column="beg_time" property="begTime" jdbcType="TIMESTAMP" />
+		<result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysMatterExecuteTime" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysMatterExecuteTime" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入办理时间表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_matter_execute_time (config_id, month, beg_time, end_time,create_time, modify_time)
+		values (#{configId,jdbcType=BIGINT}, #{month,jdbcType=VARCHAR}, #{begTime,jdbcType=TIMESTAMP},#{endTime,jdbcType=TIMESTAMP},
+		sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysMatterExecuteTime" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysMatterExecuteTime" >
+		<!--
+		  @haoxz11MyBatis
+		  更新办理时间表记录
+		-->
+		update sys_matter_execute_time
+		<set >
+			<if test="configId != null" >
+				config_id = #{configId,jdbcType=BIGINT},
+			</if>
+			<if test="month != null" >
+				month = #{month,jdbcType=VARCHAR},
+			</if>
+			<if test="begTime != null" >
+				beg_time = #{begTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="endTime != null" >
+				end_time = #{endTime,jdbcType=TIMESTAMP},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysMatterExecuteTime" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询办理时间表记录
+		-->
+		select  * from sys_matter_execute_time where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索办理时间表记录，可修改
+		-->
+		<where >
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="configId != null" >
+				<![CDATA[ AND config_id = #{configId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="month != null" >
+				<![CDATA[ AND month = #{month,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="begTime != null" >
+				<![CDATA[ AND beg_time = #{begTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="endTime != null" >
+				<![CDATA[ AND end_time = #{endTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysMatterExecuteTime" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索办理时间表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_matter_execute_time
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索办理时间表的记录数量
+		-->
+		select count(*) from sys_matter_execute_time
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_matter_execute_time where id = #{id,jdbcType=BIGINT}
+	</delete>
+	
+	<delete id="deleteByConfigId"  parameterType="java.lang.Long">
+		delete from sys_matter_execute_time where config_id = #{configId,jdbcType=BIGINT}
+	</delete>
+</mapper>

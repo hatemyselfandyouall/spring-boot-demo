@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SystemManageMapper" >
+
+  	<!--根据机构ID查询系统 -->
+  	<select id="selectByOrgId" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.systemManage.SystemManageListVo"  >
+		select
+		 	id,menu_address as menuAddress,
+		 	channel_code as channelCode,
+		 	access_Way as accessWay,
+		 	area_id as areaId, area_name as areaName,
+		 	system_name as systemName,system_address as  systemAddress
+		 from  system_manage where
+		id in (select system_id from sys_org_system where org_id = #{orgId})
+		    <if test="channelCode !=null">
+			and	channel_code = #{channelCode}
+			</if>
+
+	</select>
+
+	<select id="selectByTree" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.systemManage.SystemManageTree"  >
+		select
+		 	ma.id,a.parent_id as parentId,
+		 	ma.channel_code as channelCode,
+		 	ma.area_id as areaId, a.area_name as areaName,
+		 	ma.system_name as systemName
+		 from  sys_area as a,system_manage as ma WHERE a.id = ma.area_Id and ma.area_id like concat('%',#{areaId},'%')
+
+	</select>
+
+	<select id="selectByCode" resultType="com.wangxinenpu.springbootdemo.dataobject.po.SystemManage"  >
+		select
+		 	ma.id,a.parent_id as parentAreaId,
+		 	ma.channel_code as channelCode,
+		 	ma.area_id as areaId, a.area_name as areaName,
+		 	ma.system_name as systemName
+		 from  sys_area as a,system_manage as ma WHERE a.id = ma.area_Id and ma.area_id like concat('%',#{areaId},'%')
+
+	</select>
+</mapper>

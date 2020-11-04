@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysMatterExecuteConfigMapper" >
+	<resultMap id="SysMatterExecuteConfig" type="com.wangxinenpu.springbootdemo.dataobject.po.SysMatterExecuteConfig" >
+		<!--
+		  @haoxz11MyBatis
+		  事项执行配置表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="area_id" property="areaId" jdbcType="BIGINT" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="operate_user_id" property="operateUserId" jdbcType="BIGINT" />
+		<result column="operate_user_name" property="operateUserName" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysMatterExecuteConfig" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysMatterExecuteConfig" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入事项执行配置表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_matter_execute_config (area_id, status, operate_user_id, operate_user_name,create_time, modify_time)
+		values (#{areaId,jdbcType=BIGINT}, #{status,jdbcType=INTEGER}, #{operateUserId,jdbcType=BIGINT},#{operateUserName,jdbcType=VARCHAR},
+		sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysMatterExecuteConfig" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysMatterExecuteConfig" >
+		<!--
+		  @haoxz11MyBatis
+		  更新事项执行配置表记录
+		-->
+		update sys_matter_execute_config
+		<set >
+			<if test="areaId != null" >
+				area_id = #{areaId,jdbcType=BIGINT},
+			</if>
+			<if test="status != null" >
+				status = #{status,jdbcType=INTEGER},
+			</if>
+			<if test="operateUserId != null" >
+				operate_user_id = #{operateUserId,jdbcType=BIGINT},
+			</if>
+			<if test="operateUserName != null" >
+				operate_user_name = #{operateUserName,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysMatterExecuteConfig" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询事项执行配置表记录
+		-->
+		select  * from sys_matter_execute_config where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索事项执行配置表记录，可修改
+		-->
+		<where >
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="areaId != null" >
+				<![CDATA[ AND area_id = #{areaId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="status != null" >
+				<![CDATA[ AND status = #{status,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="operateUserId != null" >
+				<![CDATA[ AND operate_user_id = #{operateUserId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="operateUserName != null" >
+				<![CDATA[ AND operate_user_name = #{operateUserName,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysMatterExecuteConfig" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索事项执行配置表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_matter_execute_config
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索事项执行配置表的记录数量
+		-->
+		select count(*) from sys_matter_execute_config
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_matter_execute_config where id = #{id,jdbcType=BIGINT}
+	</delete>
+</mapper>

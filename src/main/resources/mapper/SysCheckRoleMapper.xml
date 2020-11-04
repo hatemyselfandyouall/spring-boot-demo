@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckRoleMapper" >
+	<resultMap id="SysCheckRole" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckRole" >
+		<!--
+		  @haoxz11MyBatis
+		  审核流程对应角色表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="role_id" property="roleId" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="pro_id" property="proId" jdbcType="BIGINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysCheckRole" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckRole" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入审核流程对应角色表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_role (`role_id`, role_name, pro_id, 
+			create_time, modify_time)
+		values (#{roleId,jdbcType=VARCHAR}, #{roleName,jdbcType=VARCHAR}, #{proId,jdbcType=BIGINT}, 
+			sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysCheckRole" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckRole" >
+		<!--
+		  @haoxz11MyBatis
+		  更新审核流程对应角色表记录
+		-->
+		update sys_check_role
+		<set >
+			<if test="roleId != null" >
+				`role_id` = #{roleId,jdbcType=VARCHAR},
+			</if>
+			<if test="roleName != null" >
+				role_name = #{roleName,jdbcType=VARCHAR},
+			</if>
+			<if test="proId != null" >
+				pro_id = #{proId,jdbcType=BIGINT},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckRole" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询审核流程对应角色表记录
+		-->
+		select  * from sys_check_role where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索审核流程对应角色表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="roleId != null" >
+				<![CDATA[ AND `role_id` = #{roleId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="roleName != null" >
+				<![CDATA[ AND role_name = #{roleName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="proId != null" >
+				<![CDATA[ AND pro_id = #{proId,jdbcType=BIGINT} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCheckRole" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索审核流程对应角色表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_check_role
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索审核流程对应角色表的记录数量
+		-->
+		select count(*) from sys_check_role
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_role where id = #{id,jdbcType=BIGINT}
+	</delete>
+	
+	<!--根据用proId删除 -->
+	<delete id="deleteByProId"  parameterType="java.lang.Long">
+		delete from sys_check_role where pro_id = #{proId,jdbcType=BIGINT}
+	</delete>
+</mapper>

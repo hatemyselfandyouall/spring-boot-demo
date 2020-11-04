@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysUserMapper">
+	<resultMap id="SysUser" type="com.wangxinenpu.springbootdemo.dataobject.po.SysUser">
+		<!--
+		  @haoxz11MyBatis
+		  系统用户表表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="code" jdbcType="VARCHAR" property="code" />
+		<result column="logon_name" jdbcType="VARCHAR" property="logonName" />
+		<result column="passwd" jdbcType="VARCHAR" property="passwd" />
+		<result column="display_name" jdbcType="VARCHAR" property="displayName" />
+		<result column="area_id" jdbcType="BIGINT" property="areaId" />
+		<result column="org_id" jdbcType="BIGINT" property="orgId" />
+		<result column="user_state" jdbcType="VARCHAR" property="userState" />
+		<result column="user_type" jdbcType="VARCHAR" property="userType" />
+		<result column="card_type" jdbcType="VARCHAR" property="cardType" />
+		<result column="card_id" jdbcType="VARCHAR" property="cardId" />
+		<result column="tel" jdbcType="VARCHAR" property="tel" />
+		<result column="mobile" jdbcType="VARCHAR" property="mobile" />
+		<result column="email" jdbcType="VARCHAR" property="email" />
+		<result column="user_addr" jdbcType="VARCHAR" property="userAddr" />
+		<result column="remark" jdbcType="VARCHAR" property="remark" />
+		<result column="creator_id" jdbcType="VARCHAR" property="creatorId" />
+		<result column="lock_time" jdbcType="TIMESTAMP" property="lockTime" />
+		<result column="unlock_time" jdbcType="TIMESTAMP" property="unlockTime" />
+		<result column="lock_reason" jdbcType="VARCHAR" property="lockReason" />
+		<result column="user_expire_date" jdbcType="TIMESTAMP" property="userExpireDate" />
+		<result column="fail_num" jdbcType="INTEGER" property="failNum" />
+		<result column="pw_expire_type" jdbcType="VARCHAR" property="pwExpireType" />
+		<result column="pw_expire_date" jdbcType="TIMESTAMP" property="pwExpireDate" />
+		<result column="pw_edit_date" jdbcType="TIMESTAMP" property="pwEditDate" />
+		<result column="signs_tate" jdbcType="VARCHAR" property="signsTate" />
+		<result column="department" jdbcType="VARCHAR" property="department" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+		<result column="prseno" jdbcType="BIGINT" property="prseno" />
+		<result column="prseno" jdbcType="BIGINT" property="prseno" />
+		<result column="last_load_ip" jdbcType="VARCHAR" property="lastLoadIp" />
+		<result column="last_load_time" jdbcType="TIMESTAMP" property="lastLoadTime" />
+		<result column="head_url" jdbcType="VARCHAR" property="headUrl"/>
+	</resultMap>
+	<insert id="insertSysUser" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysUser" useGeneratedKeys="true">
+		<!--
+		  @haoxz11MyBatis
+		  插入系统用户表记录
+		-->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_user (code,logon_name, passwd, display_name, 
+			area_id, org_id, user_state, 
+			user_type, card_type, card_id, 
+			tel, mobile, email, 
+			user_addr, remark, creator_id, 
+			lock_time, unlock_time, lock_reason, 
+			user_expire_date, fail_num, pw_expire_type, 
+			pw_expire_date, pw_edit_date, signs_tate, 
+			department, create_time, modify_time,prseno,last_load_time,last_load_ip,head_url)
+		values (#{code,jdbcType=VARCHAR},#{logonName,jdbcType=VARCHAR}, #{passwd,jdbcType=VARCHAR}, #{displayName,jdbcType=VARCHAR}, 
+			#{areaId,jdbcType=BIGINT}, #{orgId,jdbcType=BIGINT}, #{userState,jdbcType=VARCHAR}, 
+			#{userType,jdbcType=VARCHAR}, #{cardType,jdbcType=VARCHAR}, #{cardId,jdbcType=VARCHAR}, 
+			#{tel,jdbcType=VARCHAR}, #{mobile,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, 
+			#{userAddr,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{creatorId,jdbcType=VARCHAR}, 
+			#{lockTime,jdbcType=TIMESTAMP}, #{unlockTime,jdbcType=TIMESTAMP}, #{lockReason,jdbcType=VARCHAR}, 
+			#{userExpireDate,jdbcType=TIMESTAMP}, #{failNum,jdbcType=INTEGER}, #{pwExpireType,jdbcType=VARCHAR}, 
+			#{pwExpireDate,jdbcType=TIMESTAMP}, #{pwEditDate,jdbcType=TIMESTAMP}, #{signsTate,jdbcType=VARCHAR}, 
+			#{department,jdbcType=VARCHAR}, sysdate(), sysdate(),#{prseno,jdbcType=BIGINT},#{lastLoadTime,jdbcType=TIMESTAMP},#{lastLoadIp,jdbcType=VARCHAR},#{headUrl,jdbcType=VARCHAR})
+		]]>
+	</insert>
+	<update id="updateSysUser" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysUser">
+		<!--
+		  @haoxz11MyBatis
+		  更新系统用户表记录
+		-->
+		update sys_user
+		<set>
+			<if test="logonName != null and logonName != ''">
+				logon_name = #{logonName,jdbcType=VARCHAR},
+			</if>
+			<if test="passwd != null and passwd != ''">
+				passwd = #{passwd,jdbcType=VARCHAR},
+			</if>
+			<if test="displayName != null and displayName != ''">
+				display_name = #{displayName,jdbcType=VARCHAR},
+			</if>
+			<if test="areaId != null">
+				area_id = #{areaId,jdbcType=BIGINT},
+			</if>
+			<if test="orgId != null">
+				org_id = #{orgId,jdbcType=BIGINT},
+			</if>
+			<if test="userState != null and userState != ''">
+				user_state = #{userState,jdbcType=VARCHAR},
+			</if>
+			<if test="userType != null and userType != ''">
+				user_type = #{userType,jdbcType=VARCHAR},
+			</if>
+			<if test="cardType != null and cardType != ''">
+				card_type = #{cardType,jdbcType=VARCHAR},
+			</if>
+			<if test="cardId != null and cardId != ''">
+				card_id = #{cardId,jdbcType=VARCHAR},
+			</if>
+			<if test="tel != null and tel != ''">
+				tel = #{tel,jdbcType=VARCHAR},
+			</if>
+			<if test="mobile != null and mobile != ''">
+				mobile = #{mobile,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null and email != ''">
+				email = #{email,jdbcType=VARCHAR},
+			</if>
+			<if test="userAddr != null and userAddr != ''">
+				user_addr = #{userAddr,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark = #{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="creatorId != null and creatorId != ''">
+				creator_id = #{creatorId,jdbcType=VARCHAR},
+			</if>
+			<if test="lockTime != null and lockTime != ''">
+				lock_time = #{lockTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="unlockTime != null and unlockTime != ''">
+				unlock_time = #{unlockTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="lockReason != null and lockReason != ''">
+				lock_reason = #{lockReason,jdbcType=VARCHAR},
+			</if>
+			<if test="userExpireDate != null and userExpireDate != ''">
+				user_expire_date = #{userExpireDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="failNum != null">
+				fail_num = #{failNum,jdbcType=INTEGER},
+			</if>
+			<if test="pwExpireType != null and pwExpireType != ''">
+				pw_expire_type = #{pwExpireType,jdbcType=VARCHAR},
+			</if>
+			<if test="pwExpireDate != null and pwExpireDate != ''">
+				pw_expire_date = #{pwExpireDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="pwEditDate != null and pwEditDate != ''">
+				pw_edit_date = #{pwEditDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="signsTate != null and signsTate != ''">
+				signs_tate = #{signsTate,jdbcType=VARCHAR},
+			</if>
+			<if test="department != null and department != '' ">
+				department = #{department,jdbcType=VARCHAR},
+			</if>
+			<if test="lastLoadIp != null and lastLoadIp != ''">
+				last_load_ip = #{lastLoadIp,jdbcType=VARCHAR},
+			</if>
+			<if test="lastLoadTime != null and lastLoadTime != ''">
+				last_load_time = #{lastLoadTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="headUrl != null and headUrl != ''">
+				head_url = #{headUrl,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.Long" resultMap="SysUser">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询系统用户表记录
+		-->
+		select  * from sys_user where id = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysUser">
+		<!--
+		  @haoxz11MyBatis
+		  搜索系统用户表列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_user
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+		<if test="ORDERLIST == null">
+			 ORDER BY create_time desc
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索系统用户表的记录数量
+		-->
+		select count(*) from sys_user
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!-- 搜索系统用户表记录，可修改 -->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="logonName != null and logonName != ''">
+				<![CDATA[ AND logon_name like concat('%',#{logonName,jdbcType=VARCHAR},'%') ]]>
+			</if>
+			<if test="passwd != null and passwd != ''">
+				<![CDATA[ AND passwd = #{passwd,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="displayName != null and displayName !=''">
+				<![CDATA[ AND display_name like concat('%',#{displayName,jdbcType=VARCHAR},'%') ]]>
+			</if>
+			<if test="areaId != null and areaId !=''">
+				<![CDATA[ AND area_id = #{areaId,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="orgId != null and orgId !=''">
+				<![CDATA[ AND org_id = #{orgId,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="userState != null and userState !=''">
+				<![CDATA[ AND user_state = #{userState,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="userType != null and userType !='' ">
+				<![CDATA[ AND user_type = #{userType,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="userTypes != null and userTypes != ''">
+				<![CDATA[ AND user_type in(${userTypes}) ]]>
+			</if>
+			<if test="cardType != null">
+				<![CDATA[ AND card_type = #{cardType,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="cardId != null">
+				<![CDATA[ AND card_id = #{cardId,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="tel != null">
+				<![CDATA[ AND tel = #{tel,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="mobile != null">
+				<![CDATA[ AND mobile = #{mobile,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="email != null">
+				<![CDATA[ AND email = #{email,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="userAddr != null">
+				<![CDATA[ AND user_addr = #{userAddr,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="remark != null">
+				<![CDATA[ AND remark = #{remark,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="creatorId != null">
+				<![CDATA[ AND creator_id = #{creatorId,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="lockTime != null and lockTime !=''">
+				<![CDATA[ AND lock_time = #{lockTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="unlockTime != null and unlockTime!=''">
+				<![CDATA[ AND unlock_time = #{unlockTime,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="lockReason != null">
+				<![CDATA[ AND lock_reason = #{lockReason,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="userExpireDate != null and userExpireDate!=''">
+				<![CDATA[ AND user_expire_date = #{userExpireDate,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="failNum != null">
+				<![CDATA[ AND fail_num = #{failNum,jdbcType=INTEGER} ]]>
+			</if>
+			<if test="pwExpireType != null">
+				<![CDATA[ AND pw_expire_type = #{pwExpireType,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="pwExpireDate != null and pwExpireDate != ''">
+				<![CDATA[ AND pw_expire_date = #{pwExpireDate,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="pwEditDate != null and pwEditDate !=''">
+				<![CDATA[ AND pw_edit_date = #{pwEditDate,jdbcType=TIMESTAMP} ]]>
+			</if>
+			<if test="signsTate != null">
+				<![CDATA[ AND signs_tate = #{signsTate,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="department != null and department !='' ">
+				<![CDATA[ AND department = #{department,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="notUserType != null">
+				<![CDATA[ AND user_type != #{notUserType,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="notUserType2 != null">
+				<![CDATA[ AND user_type != #{notUserType2,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="userIds != null and userIds != ''">
+				<![CDATA[ AND id in(${userIds}) ]]> 
+			</if>
+			<if test="uState != null and uState != ''">
+				<![CDATA[ AND user_state !=3 ]]>
+			</if>
+			<if test="startTime != null and startTime != ''" >
+				<![CDATA[ AND create_time >= #{startTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="endTime != null and endTime != ''" >
+				<![CDATA[ AND create_time <= #{endTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+		</where>
+	</sql>
+
+	<!-- 根据登录名查询用户 -->
+	<select id="getByLoginName" parameterType="java.lang.String" resultMap="SysUser">
+		select * from sys_user where logon_name = #{loginName,jdbcType=VARCHAR} and user_state !=3
+	</select>
+
+	<!-- 根据登录名查和用户ID查询用户 -->
+	<select id="getByLogonNameAndUserIdNot" parameterType="map" resultMap="SysUser">
+		select * from sys_user a
+		<where>
+			<if test="loginName!=null and  loginName!='' ">
+				a.logon_name = #{loginName,jdbcType=VARCHAR}
+			</if>
+			<if test="userId!=null and  userId!='' ">
+				and a.id != #{userId,jdbcType=BIGINT}
+			</if>
+			and user_state !=3
+		</where>
+	</select>
+
+	<!-- 根据角色查询用户-->
+	<select id="queryUserListByRoleIds" parameterType="java.lang.String" resultMap="SysUser">
+		select distinct u.* from sys_user u, sys_user_role ur where u.id=ur.user_id and 
+		u.user_state!='3' and ur.role_id in(${roleIds})
+	</select>
+	
+	<!-- 根据ids查询用户信息-->
+	<select id="getListByIds" parameterType="java.lang.String" resultMap="SysUser">
+		select distinct u.* from sys_user u where u.id in(${ids}) order by id
+	</select>
+	
+	<!-- 根据外部天正ythUserId获取用户对象 -->
+	<select id="getCacheSysUserByYthUserId" parameterType="java.lang.String" resultMap="SysUser">
+		select u.* from sys_user u,sys_user_empower e where u.id=e.user_id and e.yth_user_id=#{ythUserId,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 根据流程获取可指派人员-->
+	<select id="getUserListByProId" parameterType="map" resultMap="SysUser">
+			select  * from sys_user
+		<where>
+			<if test="proId!=null">
+				id in(select DISTINCT u.user_id from sys_check_user u,
+				sys_user_role ur where u.pro_id =#{proId} and ur.role_id in 
+				(select role_id from sys_check_role r where r.pro_id =#{proId}))
+			</if>
+			<if test="userId!=null ">
+				and id != #{userId}
+			</if>
+			<if test="arraignmentPeopleId!=null ">
+				and id != #{arraignmentPeopleId}
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据ids查询用户信息-->
+	<select id="findUserAndRole" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysUserDTO">
+		select a.id as id,a.logon_name as logonName,a.display_name as displayName,a.user_type as userType,a.passwd as passwd,a.card_id as cardId,a.department as department,b.yth_user_id as ythUserId,c.area_name as areaName,c1.area_name as  belongsArea,f.org_name as belongsOrg,k.role_name as belongsRole
+		from sys_user a left outer join sys_user_empower b on a.id=b.user_id
+		left outer join sys_area c on a.area_id=c.id left outer join
+		sys_user_area d on a.id=d.user_id left outer join sys_area c1
+		on d.area_id=c1.id left outer join sys_user_org e on a.id=e.user_id left outer join sys_org f on e.org_id=f.id left outer join sys_user_role j on a.id=j.user_id left outer join sys_role k on j.role_id=k.id where user_state !=3
+		<if test="logonName != null">
+			and a.logon_name like concat('%',#{logonName},'%')
+		</if>
+		<if test="displayName != null">
+			and a.display_name like concat('%',#{displayName},'%')
+		</if>
+		<if test="orgId != null">
+			and e.org_id =#{orgId}
+		</if>
+		<if test="userState != null">
+			and a.user_state =#{userState}
+		</if>
+	</select>
+
+	<select id="selectByFunction"  resultMap="SysUser">
+		<!-- SELECT u.* from sys_user u JOIN sys_user_role ur on u.id = ur.user_id
+			LEFT JOIN   sys_role_function  as  rf ON ur.role_id = rf.role_id where rf.function_id =#{functionId} -->
+			SELECT u.* from sys_user u JOIN sys_user_role ur on u.id = ur.user_id
+			LEFT JOIN   sys_role_function  as  rf ON ur.role_id = rf.role_id ,sys_user_org suo,sys_org so  
+			where u.id=suo.user_id and suo.org_id = so.id and so.orgenter_code =#{orgenterCode} and rf.function_id =#{functionId}
+	</select>
+
+    <select id="findUserByPhone"  resultMap="SysUser">
+		select * from sys_user where tel =#{phone}
+	</select>
+
+    <update id="updatePSDByUserId">
+        update sys_user
+        <set>
+        <if test="password != null">
+            passwd = #{password,jdbcType=VARCHAR},
+        </if>
+        </set>
+        where id = #{userId}
+    </update>
+
+	<!-- 根据角色类型和科室查询用户-->
+	<select id="queryUserListByDeparment"  resultMap="SysUser">
+		select distinct u.* from sys_user u where
+u.user_state!='3'
+		<if test="department != null and department != ''">
+	and CONCAT (',',department,',') REGEXP CONCAT(',(',#{department},'),')
+		</if>
+		<if test="roleType != null">
+			and u.user_type =#{roleType,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<!-- 根据科室为空和用户类型查询用户 -->
+	<select id="queryUserListByUserType" resultMap="SysUser">
+     select a.* from sys_user a join sys_user_org b on a.id=b.user_id where  a.user_state!=3  and (a.department is null or a.department ='') and b.org_id=#{orgId,jdbcType=BIGINT} and a.user_type=#{userType,jdbcType=VARCHAR}
+	</select>
+
+
+	<select id="getAllList" resultMap="SysUser">
+		select t.department,t.org_id,t.* from sys_user t where department !='' and department is not null and org_id is not null and t.department in ('1','2','3','4');
+	</select>
+
+	<delete id="deleteByUserId" parameterType="java.lang.Long">
+		delete from sys_user where id = #{userId,jdbcType=BIGINT}
+	</delete>
+</mapper>

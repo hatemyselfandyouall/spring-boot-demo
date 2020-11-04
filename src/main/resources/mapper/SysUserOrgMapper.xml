@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysUserOrgMapper">
+	<resultMap id="SysUserOrg" type="com.wangxinenpu.springbootdemo.dataobject.po.SysUserOrg">
+		<!--
+		  @haoxz11MyBatis
+		 用户机构关系表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="area_id" jdbcType="BIGINT" property="areaId" />
+		<result column="user_id" jdbcType="BIGINT" property="userId" />
+		<result column="org_id" jdbcType="BIGINT" property="orgId" />
+		<result column="department_id" jdbcType="VARCHAR" property="departmentId" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	</resultMap>
+	<insert id="insertSysUserOrg" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysUserOrg">
+		<!--
+		  @haoxz11MyBatis
+		  插入用户机构关系表记录
+		-->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_user_org (area_id, user_id,org_id,department_id, create_time, modify_time
+			)
+		values (#{areaId,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT},#{orgId,jdbcType=BIGINT},#{departmentId,jdbcType=VARCHAR},sysdate(), sysdate()
+			)
+		]]>
+	</insert>
+	<update id="updateSysUserOrg" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysUserOrg">
+		<!--
+		  @haoxz11MyBatis
+		  更新用户机构关系表记录
+		-->
+		update sys_user_org
+		
+		<set>
+			<if test="areaId != null">
+				area_id = #{areaId,jdbcType=BIGINT},
+			</if>
+			<if test="userId != null">
+				user_id = #{userId,jdbcType=BIGINT},
+			</if>
+			<if test="orgId != null">
+				org_id = #{orgId,jdbcType=BIGINT},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" parameterType="map" resultMap="SysUserOrg">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询用户机构关系表记录
+		-->
+		select  * from sys_user_org where id = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysUserOrg">
+		<!--
+		  @haoxz11MyBatis
+		  搜索用户机构关系表列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_user_org
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索用户机构关系表的记录数量
+		-->
+		select count(*) from sys_user_org
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索用户机构关系表记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="userId != null">
+				<![CDATA[ AND user_id = #{userId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="areaId != null">
+				<![CDATA[ AND area_id = #{areaId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="orgId != null">
+				<![CDATA[ AND org_id = #{orgId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="orgIds != null">
+				and org_id in
+				<foreach collection="orgIds" open="(" close=")" separator="," item="item" >
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 查询用户绑定的机构 -->
+	<select id="findByUserId" resultMap="SysUserOrg" resultType="java.lang.Long">
+		select * from sys_user_org where user_id = #{userId,jdbcType=BIGINT}
+	</select>
+	
+	<!--根据用户ID删除 -->
+	<delete id="deleteByUserId" parameterType="java.lang.Long">
+		delete from sys_user_org where user_id = #{userId,jdbcType=BIGINT}
+	</delete>
+	
+	<!-- 查询用户关联机构下的用户 -->
+	<select id="queryUserOrgByOrgIds" resultMap="SysUserOrg" resultType="java.lang.Long">
+		select DISTINCT * from sys_user_org where org_id in(select org_id from sys_user_org where user_id = #{userId,jdbcType=BIGINT}) GROUP BY user_id
+	</select>
+	
+</mapper>

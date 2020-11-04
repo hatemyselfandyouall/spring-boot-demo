@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckProcessMapper" >
+	<resultMap id="SysCheckProcess" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckProcess" >
+		<!--
+		  @haoxz11MyBatis
+		  审核流程表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="dispatch_rule" property="dispatchRule" jdbcType="VARCHAR" />
+		<result column="is_material" property="isMaterial" jdbcType="VARCHAR" />
+		<result column="step" property="step" jdbcType="VARCHAR" />
+		<result column="config_id" property="configId" jdbcType="BIGINT" />
+		<result column="version" property="version" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="his_id" property="hisId" jdbcType="BIGINT" />
+		<result column="polling_num" jdbcType="INTEGER" property="pollingNum" />
+		<result column="is_last" jdbcType="INTEGER" property="isLast" />
+		<result column="org_id" jdbcType="INTEGER" property="orgId" />
+		<result column="org_id_path" jdbcType="VARCHAR" property="orgIdPath" />
+	</resultMap>
+	<insert id="insertSysCheckProcess" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckProcess" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入审核流程表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_process (`name`, dispatch_rule, is_material,org_id,org_id_path,
+			step,config_id,version,his_id,polling_num,is_last, create_time, modify_time)
+		values (#{name,jdbcType=VARCHAR}, #{dispatchRule,jdbcType=VARCHAR}, #{isMaterial,jdbcType=VARCHAR}, #{orgId,jdbcType=INTEGER},#{orgIdPath,jdbcType=VARCHAR},
+			#{step,jdbcType=VARCHAR},#{configId,jdbcType=BIGINT},#{version,jdbcType=VARCHAR},
+			#{hisId,jdbcType=BIGINT},#{pollingNum,jdbcType=INTEGER},#{isLast,jdbcType=INTEGER}, sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysCheckProcess" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckProcess" >
+		<!--
+		  @haoxz11MyBatis
+		  更新审核流程表记录
+		-->
+		update sys_check_process
+		<set >
+			<if test="name != null" >
+				`name` = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="dispatchRule != null" >
+				dispatch_rule = #{dispatchRule,jdbcType=VARCHAR},
+			</if>
+			<if test="isMaterial != null" >
+				is_material = #{isMaterial,jdbcType=VARCHAR},
+			</if>
+			<if test="step != null" >
+				step = #{step,jdbcType=VARCHAR},
+			</if>
+			<if test="configId != null" >
+				config_id = #{configId,jdbcType=BIGINT},
+			</if>
+			<if test="version != null" >
+				version = #{version,jdbcType=VARCHAR},
+			</if>
+			<if test="hisId != null" >
+				his_id = #{hisId,jdbcType=BIGINT},
+			</if>
+			<if test="pollingNum != null" >
+				polling_num = #{pollingNum,jdbcType=INTEGER},
+			</if>
+			<if test="isLast != null" >
+				is_last = #{isLast,jdbcType=INTEGER},
+			</if>
+			<if test="orgId != null" >
+				org_id = #{orgId,jdbcType=INTEGER},
+			</if>
+			<if test="orgIdPath != null and orgIdPath != '' " >
+				org_id_path = #{orgIdPath,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckProcess" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询审核流程表记录
+		-->
+		select  * from sys_check_process where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索审核流程表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="name != null" >
+				<![CDATA[ AND `name` = #{name,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="dispatchRule != null" >
+				<![CDATA[ AND dispatch_rule = #{dispatchRule,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="isMaterial != null" >
+				<![CDATA[ AND is_material = #{isMaterial,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="step != null" >
+				<![CDATA[ AND step = #{step,jdbcType=VARCHAR} ]]>
+			</if>
+			<if test="configId != null" >
+				<![CDATA[ AND config_id = #{configId,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="hisId != null" >
+				<![CDATA[ AND his_id = #{hisId,jdbcType=BIGINT} ]]>
+			</if>
+			<if test="version != null" >
+				<![CDATA[ AND version = #{version,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="pollingNum != null" >
+				<![CDATA[ AND polling_num = #{pollingNum,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="isLast != null" >
+				<![CDATA[ AND is_last = #{isLast,jdbcType=INTEGER} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCheckProcess" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索审核流程表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_check_process
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索审核流程表的记录数量
+		-->
+		select count(*) from sys_check_process
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_process where id = #{id,jdbcType=BIGINT}
+	</delete>
+	
+	<!--查询最大版本号 -->
+	<select id="findVersionByConfigId" resultType="java.lang.String" parameterType="map" >
+		select max(cast(p.version as UNSIGNED INTEGER))as version from sys_check_process p where p.config_id= #{configId,jdbcType=BIGINT}
+	</select>
+	
+	<!--根据审核配置Id和步骤查询最大流程ID -->
+	<select id="findIdByConfigIdAndStep" resultType="java.lang.String" parameterType="map" >
+		select max(p.id) AS id
+		from
+		sys_check_process p where p.step =#{step,jdbcType=VARCHAR} and p.config_id =#{configId,jdbcType=BIGINT}
+		GROUP BY p.step,p.config_id
+	</select>
+	
+	<!-- 根据配置ID查询最大版本流程 -->
+	<select id="getListByConfigId" resultMap="SysCheckProcess" parameterType="map" >
+		select * from sys_check_process p  where p.config_id =#{configId,jdbcType=BIGINT} and  p.version in(  
+		select max(cast(p.version as UNSIGNED INTEGER)) from sys_check_process p where  p.config_id =#{configId,jdbcType=BIGINT})
+	</select>
+	
+	<!-- 根据流程id查找 -->
+	<select id="queryProListByProIds" parameterType="java.lang.String" resultMap="SysCheckProcess">
+		select * from sys_check_process p where p.id in(${proIds})
+	</select>
+
+	<!-- 根据流程id查找 -->
+	<select id="queryProStepByUserId" resultType="java.lang.String">
+		select t.step from (
+			select p.step from
+		sys_check_user e,
+		(select d.id,d.step from sys_check_config c,
+		sys_check_process d where c.id=d.config_id and
+		d.version=(select max(b.version) from sys_check_config a,sys_check_process b where a.id=b.config_id and a.org_id=#{orgId} and a.fun_id=#{funId}
+		) and c.org_id=#{orgId} and c.fun_id=#{funId}) as p
+		where e.pro_id=p.id
+		and
+		e.user_id=#{userId}
+			union all
+			select p.step from
+			sys_check_role e,
+			sys_user_role f,
+		(select d.id,d.step from sys_check_config c,
+		sys_check_process d where c.id=d.config_id and
+		d.version=(select max(b.version) from sys_check_config a,sys_check_process b where a.id=b.config_id and a.org_id=#{orgId} and a.fun_id=#{funId}
+		) and c.org_id=#{orgId} and c.fun_id=#{funId}) as p
+		where
+		e.role_id=f.role_id
+		and e.pro_id=p.id
+		and f.user_id=#{userId}
+		) t
+	</select>
+	
+	
+	<!-- 根据当前登录人和状态查询当前由我审核的流程SysCheckProcessRespDTO列表 -->
+	<resultMap id="SysCheckProcessRespDTO" type="com.wangxinenpu.springbootdemo.dataobject.vo.response.SysCheckProcessRespDTO" >
+		<result column="step" property="step" jdbcType="VARCHAR" />
+		<result column="config_id" property="configId" jdbcType="BIGINT" />
+		<result column="version" property="version" jdbcType="VARCHAR" />
+	</resultMap>
+	<!-- 根据当前登录人和状态查询当前由我审核的流程SysCheckProcessRespDTO列表 -->
+	<select id="getMyCheckingProcessListByParam"  resultMap="SysCheckProcessRespDTO">
+		select cp.step,cp.config_id,cp.version  from sys_check_process cp where cp.id  in (
+			select distinct t.pro_id from sys_check_information t where t.check_people_id =  #{userId,jdbcType=BIGINT} and t.check_result = #{checkResult,jdbcType=VARCHAR}
+		)
+	</select>
+	
+	<!--
+		  @haoxz11MyBatis
+		批量新增
+		-->
+	<insert id="insertBatch" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckProcess">
+		insert into sys_check_process (`name`, dispatch_rule, is_material,org_id,org_id_path,
+			step,config_id,version,his_id,polling_num,is_last, create_time, modify_time)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+            (#{item.name,jdbcType=VARCHAR}, #{item.dispatchRule,jdbcType=VARCHAR}, #{item.isMaterial,jdbcType=VARCHAR},
+             #{item.orgId,jdbcType=INTEGER},#{item.orgIdPath,jdbcType=VARCHAR},
+			#{item.step,jdbcType=VARCHAR},#{item.configId,jdbcType=BIGINT},#{item.version,jdbcType=VARCHAR},
+			#{item.hisId,jdbcType=BIGINT},#{item.pollingNum,jdbcType=INTEGER},#{item.isLast,jdbcType=INTEGER}, sysdate(), sysdate())
+        </foreach>
+		 
+	</insert>
+
+</mapper>

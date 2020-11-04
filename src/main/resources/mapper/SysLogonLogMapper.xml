@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysLogonLogMapper">
+	<resultMap id="SysLogonLog" type="com.wangxinenpu.springbootdemo.dataobject.po.SysLogonLog">
+		<!--
+		  @haoxz11MyBatis
+		  系统登录日志表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="user_id" jdbcType="BIGINT" property="userId" />
+		<result column="logon_ip" jdbcType="VARCHAR" property="logonIp" />
+		<result column="logon_time" jdbcType="TIMESTAMP" property="logonTime" />
+		<result column="logoff_time" jdbcType="TIMESTAMP" property="logoffTime" />
+		<result column="success_flag" jdbcType="VARCHAR" property="successFlag" />
+		<result column="fail_reason" jdbcType="VARCHAR" property="failReason" />
+		<result column="logoff_reason" jdbcType="VARCHAR" property="logoffReason" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	</resultMap>
+	<insert id="insertSysLogonLog" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysLogonLog" useGeneratedKeys="true">
+		<!--
+		  @haoxz11MyBatis
+		  插入系统登录日志记录
+		-->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_logon_log (user_id, logon_ip, logon_time, 
+			logoff_time, success_flag, fail_reason, 
+			logoff_reason, create_time, modify_time)
+		values (#{userId,jdbcType=BIGINT}, #{logonIp,jdbcType=VARCHAR}, #{logonTime,jdbcType=TIMESTAMP}, 
+			#{logoffTime,jdbcType=TIMESTAMP}, #{successFlag,jdbcType=VARCHAR}, #{failReason,jdbcType=VARCHAR}, 
+			#{logoffReason,jdbcType=VARCHAR}, sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysLogonLog" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysLogonLog">
+		<!--
+		  @haoxz11MyBatis
+		  更新系统登录日志记录
+		-->
+		update sys_logon_log
+		<set>
+			<if test="userId != null">
+				user_id = #{userId,jdbcType=BIGINT},
+			</if>
+			<if test="logonIp != null">
+				logon_ip = #{logonIp,jdbcType=VARCHAR},
+			</if>
+			<if test="logonTime != null">
+				logon_time = #{logonTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="logoffTime != null">
+				logoff_time = #{logoffTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="successFlag != null">
+				success_flag = #{successFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="failReason != null">
+				fail_reason = #{failReason,jdbcType=VARCHAR},
+			</if>
+			<if test="logoffReason != null">
+				logoff_reason = #{logoffReason,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.Long" resultMap="SysLogonLog">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询系统登录日志记录
+		-->
+		select  * from sys_logon_log where id = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysLogonLog">
+		<!--
+		  @haoxz11MyBatis
+		  搜索系统登录日志列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_logon_log
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索系统登录日志的记录数量
+		-->
+		select count(*) from sys_logon_log
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索系统登录日志记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="userId != null">
+				<![CDATA[ AND user_id = #{userId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="logonIp != null">
+				<![CDATA[ AND logon_ip = #{logonIp,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="logonTime != null">
+				<![CDATA[ AND logon_time = #{logonTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="logoffTime != null">
+				<![CDATA[ AND logoff_time = #{logoffTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="successFlag != null">
+				<![CDATA[ AND success_flag = #{successFlag,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="failReason != null">
+				<![CDATA[ AND fail_reason = #{failReason,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="logoffReason != null">
+				<![CDATA[ AND logoff_reason = #{logoffReason,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+</mapper>
