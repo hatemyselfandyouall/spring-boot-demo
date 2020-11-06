@@ -7,6 +7,7 @@ import com.wangxinenpu.springbootdemo.service.facade.SysUserFacade;
 import com.wangxinenpu.springbootdemo.webtool.struct.CookieEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import star.fw.web.util.CookieHelper;
 import star.fw.web.util.ServletAttributes;
@@ -15,10 +16,13 @@ import star.util.NumberUtil;
 import star.util.StringUtil;
 
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+
+import static star.fw.web.util.CookieHelper.encodeCookie;
 
 /**
  * Title: 登录帮助类
@@ -38,6 +42,13 @@ public class LoginComponent {
     @Autowired
     private SysUserFacade sysUserFacade;
 
+    @Value("${sys.cookie.domains}")
+    private String domains;
+
+    @PostConstruct
+    public void test(){
+        System.out.println("do it");
+    }
     /**
      * 判断是否为登录状态
      *
@@ -78,7 +89,7 @@ public class LoginComponent {
         if (values != null && values.length > 0) {
             return Long.parseLong(values[0]);
         }
-        return 2l;
+        return null;
     }
 
     public String getLoginUserName() {
@@ -90,16 +101,48 @@ public class LoginComponent {
         if (values != null && values.length >= 2) {
             return values[1];
         }
-        return "admin";
+        return null;
     }
 
     public void saveLogin(ManagerVo sysUser) {
-        CookieHelper.saveToken2Cookie4Domains(CookieEnum.LOGIN.getValue(),
+        saveToken2Cookie4Domains(CookieEnum.LOGIN.getValue(),
                 new String[]{String.valueOf(sysUser.getId()), sysUser.getName(),
 //						StringUtil.getMD5(sysUser.getPasswd()),
                         sysUser.getPasswd(),
                         String.valueOf(System.currentTimeMillis())},
                 CookieHelper.CookieTime.TIME_LONGIN);
+    }
+
+    public  void saveToken2Cookie4Domains(String cookieName, String[] tokens, CookieHelper.CookieTime maxAge) {
+        if (domains != null && domains.length() > 0) {
+            String cookieValue = encodeCookie(tokens);
+
+
+            String[] var4 = domains.split("\\|");
+            int var5 = var4.length;
+
+            for(int var6 = 0; var6 < var5; ++var6) {
+                String domain = var4[var6];
+                setCookie4Domain(cookieName, cookieValue, maxAge.getTime(), domain);
+            }
+
+        }
+    }
+
+    private static void setCookie4Domain(String cookieName, String cookieValue, int maxAge, String domain) {
+        ServletAttributes.getResponse().setHeader("P3P", "CP=CAO PSA OUR");
+        Cookie cookie = newCookie(cookieName, cookieValue, maxAge, domain);
+        ServletAttributes.getResponse().addCookie(cookie);
+    }
+
+    private static Cookie newCookie(String cookieName, String cookieValue, int maxAge, String domain) {
+        Cookie cookie = new Cookie(cookieName, cookieValue);
+        cookie.setMaxAge(maxAge);
+        cookie.setDomain(domain);
+        cookie.setPath("/");
+        cookie.setSecure(false);
+        cookie.setHttpOnly(true);
+        return cookie;
     }
 
     public boolean isLoginByH5(HttpServletRequest request, HttpServletResponse response) {
