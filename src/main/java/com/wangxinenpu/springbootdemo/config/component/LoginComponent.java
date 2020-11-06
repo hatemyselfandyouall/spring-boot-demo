@@ -145,6 +145,19 @@ public class LoginComponent {
         return cookie;
     }
 
+    public  void cancelCookie4Domains(String cookieName) {
+        if (domains != null && domains.length() > 0) {
+            String[] var1 = domains.split("\\|");
+            int var2 = var1.length;
+
+            for(int var3 = 0; var3 < var2; ++var3) {
+                String domain = var1[var3];
+                setCookie4Domain(cookieName, (String)null, 0, domain);
+            }
+
+        }
+    }
+
     public boolean isLoginByH5(HttpServletRequest request, HttpServletResponse response) {
         return isLogin( request,  response) || isLoginByCas(request, response);
     }

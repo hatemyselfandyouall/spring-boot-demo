@@ -135,7 +135,7 @@ public class LoginController  {
 	public ResultVo<String> login(HttpServletRequest request, Model model, String cmd, String url) {
 		ResultVo<String> result = Results.newResultVo();
 		if ("logout".equals(cmd)) {
-			CookieHelper.cancelCookie4Domains(CookieEnum.LOGIN.getValue());
+			loginComponent.cancelCookie4Domains(CookieEnum.LOGIN.getValue());
 			ImageCodeUtil.clearImageCode(jedisService, request.getSession().getId());
 			result.setCode("0");
 	        result.setSuccess(true);
