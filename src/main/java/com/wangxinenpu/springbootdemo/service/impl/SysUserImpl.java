@@ -682,23 +682,23 @@ public class SysUserImpl implements SysUserFacade {
 
 	@Override
 	public boolean getAuthByUrlAndUserId(String uri, Long userId) {
-//		if(StringUtil.isEmpty(uri) || null ==userId) return false;
-//		SysUserDTO sysUser = sysUserService.getByPrimaryKey(userId);
-//		if(null != sysUser){
-//			if("1".equals(sysUser.getUserType())){//超级管理员
-//				return true;
-//			}
-//			List<SysFunctionDTO> functionList =sysFunctionFacade.queryFunctionListByRoleId(sysUser);
-//			if(functionList.size()>0){
-//				for(SysFunctionDTO fun : functionList){
-//					if(uri.equals(fun.getLocation())){
-//						return true;
-//					}
-//				}
-//			}
-//		}
-//		return false;
-		return true;
+		if(StringUtil.isEmpty(uri) || null ==userId) return false;
+		SysUserDTO sysUser = sysUserService.getByPrimaryKey(userId);
+		if(null != sysUser){
+			if("1".equals(sysUser.getUserType())){//超级管理员
+				return true;
+			}
+			List<SysFunctionDTO> functionList =sysFunctionFacade.queryFunctionListByRoleId(sysUser);
+			if(functionList.size()>0){
+				for(SysFunctionDTO fun : functionList){
+					if(uri.equals(fun.getLocation())){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+//		return true;
 	}
 
 	@Override

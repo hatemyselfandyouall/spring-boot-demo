@@ -17,6 +17,9 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
     @Autowired
     ParameterInterceptor parameterInterceptor;
 
+    @Autowired
+    PermissionInterceptor permissionInterceptor;
+
 
 
     @Override
@@ -53,8 +56,33 @@ public class InterceptorConfig extends WebMvcConfigurationSupport {
                 .excludePathPatterns("/images/**")
                 .excludePathPatterns("/index.html")
                 .excludePathPatterns("/static/**")
+                .excludePathPatterns("/swagger**")
+                .excludePathPatterns("**css")
+                .excludePathPatterns("**js")
+                .excludePathPatterns("**png")
                 .excludePathPatterns("/error*");
         super.addInterceptors(registry);//最后将register往这里塞进去就可以了
+        registry.addInterceptor(permissionInterceptor)
+                //添加需要验证登录用户操作权限的请求
+                .addPathPatterns("/**")
+                //这里add为“/**”,下面的exclude才起作用，且不管controller层是否有匹配客户端请求，拦截器都起作用拦截
+//                .addPathPatterns("/hello")
+                //如果add为具体的匹配如“/hello”，下面的exclude不起作用,且controller层不匹配客户端请求时拦截器不起作用
+
+                //排除不需要验证登录用户操作权限的请求
+                .excludePathPatterns("/login*")
+                .excludePathPatterns("/doLogin*")
+                .excludePathPatterns("/css/**")
+                .excludePathPatterns("/js/**")
+                .excludePathPatterns("/images/**")
+                .excludePathPatterns("/index.html")
+                .excludePathPatterns("/static/**")
+                .excludePathPatterns("/swagger**")
+                .excludePathPatterns("**css")
+                .excludePathPatterns("**js")
+                .excludePathPatterns("**png")
+                .excludePathPatterns("/error*");
+        super.addInterceptors(registry);
     }
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
