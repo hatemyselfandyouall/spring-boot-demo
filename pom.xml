@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.wangxinenpu</groupId>
-	<artifactId>spring-boot-demo</artifactId>
+	<artifactId>payserver-project</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>spring-boot-demo</name>
+	<name>payserver-project</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
@@ -68,7 +68,8 @@
 			<version>1.18.4</version>
 		</dependency>
 
-		<dependency>
+        <!--swagger-->
+        <dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
 			<version>2.9.2</version>
@@ -78,7 +79,15 @@
 			<artifactId>springfox-swagger2</artifactId>
 			<version>2.9.2</version>
 		</dependency>
-	</dependencies>
+
+        <!--webservice-cxf-->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-spring-boot-starter-jaxrs</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+
+    </dependencies>
 
 	<build>
 		<plugins>
