@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
 import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.wangxinenpu.springbootdemo.dataobject.User;
 import com.wangxinenpu.springbootdemo.dataobject.dto.ParamDTO;
 import com.wangxinenpu.springbootdemo.dataobject.enums.PayStatusEnum;
 import com.wangxinenpu.springbootdemo.dataobject.enums.PayWayStatusEnum;
