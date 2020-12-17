@@ -4,7 +4,7 @@
 
 
     <!--<include resource="org/springframework/boot/logging/logback/base.xml"/>-->
-    <property name="LOG_PATH" value="${user.home}/OMS"/>
+    <property name="LOG_PATH" value="${user.home}/payserverLog"/>
 
     <!--输出到控制台-->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">

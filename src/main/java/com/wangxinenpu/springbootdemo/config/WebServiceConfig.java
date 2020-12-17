@@ -21,7 +21,7 @@ public class WebServiceConfig {
     @Bean
     public Endpoint endpoint(){
         EndpointImpl endpointImpl = new EndpointImpl(bus, userService);
-        endpointImpl.publish("/HelloService");
+        endpointImpl.publish("/payService");
         return endpointImpl;
     }
 }

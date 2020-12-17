@@ -1,4 +1,4 @@
-package com.wangxinenpu.springbootdemo.dataobject.vo.root;
+package com.wangxinenpu.springbootdemo.dataobject.vo.getBatchPayInfoDTO;
 
 import java.io.Serializable;
 

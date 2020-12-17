@@ -1,10 +1,7 @@
 package com.wangxinenpu.springbootdemo.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.wangxinenpu.springbootdemo.dataobject.dto.ParamDTO;
 import com.wangxinenpu.springbootdemo.dataobject.enums.PayStatusEnum;
 import com.wangxinenpu.springbootdemo.dataobject.enums.PayWayStatusEnum;
 import com.wangxinenpu.springbootdemo.dataobject.po.PayLog;
@@ -13,25 +10,14 @@ import com.wangxinenpu.springbootdemo.service.PayWorkLogService;
 import com.wangxinenpu.springbootdemo.util.JsonXmlUtils;
 import com.wangxinenpu.springbootdemo.util.ReportCrawlerPorxy;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.cxf.endpoint.ClientImpl;
-import org.apache.cxf.endpoint.Endpoint;
-import org.apache.cxf.service.model.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import org.apache.cxf.endpoint.Client;
-import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
 
-import javax.xml.namespace.QName;
-import java.io.StringReader;
 import java.util.*;
 
 
@@ -170,6 +156,31 @@ public class PayWorkController {
         }catch (Exception e){
             log.error("税务平台退款接口异常",e);
             return new SWPTRefundReturnVO().setSuccess(false).setERRMSG(e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "获取税务平台基础信息")
+    @RequestMapping(value = {"/getBasicInfo"}, method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    public SWPTBasicInfoReturnVO reFoundinSWPT(@RequestParam String channelNO){
+        try {
+            //创建请求参数
+            String msg=ReportCrawlerPorxy.createGetBasicInfoMsg(channelNO);
+            //发起请求
+            String result=ReportCrawlerPorxy.invoker(msg,SWPT_WEBSERVICE_URL,null);
+            //结果解析
+            log.info(result);
+            String code=ReportCrawlerPorxy.getCodeFromResult(result);
+            Boolean isSuccess=false;
+            String errorMsg=ReportCrawlerPorxy.getErrorMsg(result);
+            JSONObject detail=null;
+            if ("00".equals(code)){
+                isSuccess=true;
+                detail=ReportCrawlerPorxy.getBasicInfoDetail(result);
+            }
+            return new SWPTBasicInfoReturnVO().setCode(code).setSuccess(isSuccess).setERRMSG(errorMsg).setDetail(detail);
+        }catch (Exception e){
+            log.error("税务平台退款接口异常",e);
+            return new SWPTBasicInfoReturnVO().setSuccess(false).setERRMSG(e.getMessage());
         }
     }
 

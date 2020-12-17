@@ -140,6 +140,26 @@ public  class ReportCrawlerPorxy  {
             "   </soapenv:Body>\n" +
             "</soapenv:Envelope>";
 
+    private static String GET_BASIC_INFO_STRING="<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://server.remotting.hundsun.com/\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <ser:Get_Basic_Info>\n" +
+            "         <!--Optional:-->\n" +
+            "         <ser:RemottingService><![CDATA[<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "\n" +
+            "<ROOT> \n" +
+            "  <REQUEST> \n" +
+            "    <PARAM NAME=\"CHANNELNO\">channelno</PARAM>  \n" +
+            "    <PARAM NAME=\"CHECKCODE\"/> \n" +
+            "  </REQUEST>  \n" +
+            "  <RESPONSE/> \n" +
+            "</ROOT>\n" +
+            "         \n" +
+            "         \n" +
+            "         ]]></ser:RemottingService>\n" +
+            "      </ser:Get_Basic_Info>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
 
     public static void main(String[] args) throws Exception {
 //      String result= invoker(AGENCYINFO_XML,"http://223.4.68.23:8080/nontax/services/remottingService",null);
@@ -220,6 +240,17 @@ public  class ReportCrawlerPorxy  {
         JSONObject jsonObject = XmlLoader.xml2jsonObj(xml);
         SWPTRefundVO swptPayVO=JSONObject.parseObject(jsonObject.toJSONString(),SWPTRefundVO.class);
         return swptPayVO;
+    }
+
+    public static String createGetBasicInfoMsg(String channelNO) {
+        return GET_BASIC_INFO_STRING.replaceFirst("channelno",channelNO);
+    }
+
+    public static JSONObject getBasicInfoDetail(String result) {
+        String xml = result.replaceAll("&lt;", "<").replaceAll("&gt;", ">");
+        xml="<ROOT>"+XmlLoader.getMsgByXML(xml,"<ROOT>","</ROOT>")+"</ROOT>";
+        JSONObject jsonObject = XmlLoader.xml2jsonObj(xml);
+        return jsonObject;
     }
 
     public  String createAGENCYINFOXML(){
