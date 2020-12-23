@@ -49,17 +49,17 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
 		// 上下文路径
-		if (loginComponent.isLogin(request, response)) {
+//		if (loginComponent.isLogin(request, response)) {
 			return super.preHandle(request, response, handler);
-		} else {
-			ResultVo result = new ResultVo();
-			result.setCode("6001");
-			result.setResultDes("login failed");
-			JSONObject.toJSONString(result);
-			response.setCharacterEncoding("UTF-8");
-			response.getWriter().write(JSONObject.toJSONString(result));
-		}
-		return false;
+//		} else {
+//			ResultVo result = new ResultVo();
+//			result.setCode("6001");
+//			result.setResultDes("login failed");
+//			JSONObject.toJSONString(result);
+//			response.setCharacterEncoding("UTF-8");
+//			response.getWriter().write(JSONObject.toJSONString(result));
+//		}
+//		return false;
 	}
 
 	@Override

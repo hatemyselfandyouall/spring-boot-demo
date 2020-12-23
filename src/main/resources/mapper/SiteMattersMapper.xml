@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.selfmachine.SiteMattersMapper" >
+	<resultMap id="SiteMattersVo" type="com.wangxinenpu.springbootdemo.dataobject.po.SiteMatters">
+		<result property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="shortName" column="short_name" />
+		<result property="iconCategoryId" column="icon_category_id" />
+		<result property="bussType" column="buss_type" />
+		<result property="siteBusinessType" column="business_type_id" />
+		<result property="blockPcId" column="block_pc_id" />
+		<result property="blockAppId" column="block_app_id" />
+		<result property="operatorId" column="operator_id" />
+		<result property="modifierId" column="modifier_id" />
+		<result property="createTime" column="create_time" />
+		<result property="modifyTime" column="modify_time" />
+		<result property="modifierId" column="modifier_id" />
+		<result property="iconCategoryName" column="iconCategoryName" />
+		<result property="sysFunctionId" column="sys_function_id" />
+		<result property="sysFunctionName" column="sys_function_name" />
+	</resultMap>
+
+	<select id="SelectByLike" resultMap="SiteMattersVo">
+		SELECT s.*,t.`name` as iconCategoryName FROM(
+		select e.* from site_matters e WHERE 1 =1
+	<if test="null !=name and ''!=name">		and LOCATE(#{name},e.name ) OR LOCATE(#{name},e.short_name)
+	</if>
+	) s
+	left join site_icon_category t on s.icon_category_id = t.id order by s.modify_time desc
+	</select>
+    <update id="updateSiteMattersCategoryIdNull" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SiteMatters">
+        update site_matters set icon_category_id=null where icon_category_id=#{iconCategoryId} and buss_type=#{bussType}
+    </update>
+
+    <update id="updateSiteMattersCategoryId" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SiteMatters">
+        update site_matters set icon_category_id=#{iconCategoryId} where id=#{id}
+    </update>
+    <select id="getSiteMattersByCategoryIdNull" parameterType="java.lang.Integer" resultType="com.wangxinenpu.springbootdemo.dataobject.po.SiteMatters">
+      select id as id,name as name from site_matters where icon_category_id is null and buss_type=#{bussType}
+    </select>
+
+
+	<select id="getSiteMattersList" resultType="com.wangxinenpu.springbootdemo.dataobject.po.SiteMatters">
+		select
+		*
+		from
+		site_matters sm
+		left join site_block sb1
+		on sm.`block_app_id` = sb1.`id`
+		left join site_block sb2
+		on sm.`block_pc_id` = sb2.`id`
+		<where>
+		1=1
+		<if test="null !=bussType and ''!=bussType">
+				and buss_type=#{bussType}
+		</if>
+<!--			<if test="openStatus == 1">-->
+<!--				and sb1.jump_url !=null-->
+<!--			</if>-->
+<!--			<if test="openStatus == 2">-->
+<!--				and sb2.jump_url !=null-->
+<!--			</if>-->
+		</where>
+	</select>
+
+	<select id="getSSMSiteMattersList" parameterType="java.lang.Long" resultType="com.wangxinenpu.springbootdemo.dataobject.po.SiteMatters">
+		select DISTINCT b.id as id,b.name as name,b.is_recommend as isRecommend,b.icon_category_id as iconCategoryId from site_matters_area a,site_matters b,site_block c where a.matters_id=b.id and b.block_ssm_id=c.id and b.block_ssm_id is not null
+		<if test="null !=areaId and ''!=areaId">
+			and a.area_id=#{areaId}
+		</if>
+		order by b.is_recommend desc,c.sort_number asc,b.modify_time desc
+	</select>
+
+	<select id="checkSSMSiteMatters" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(1) from site_matters a where a.block_ssm_id is not null and a.name=#{name}
+	</select>
+
+	<select id="getSiteIconCategoryAndMatters" resultType="com.wangxinenpu.springbootdemo.dataobject.dto.sitematters.SiteMattersInfoDto">
+		select a.id as id,a.name as name,a.short_name as shortName,a.icon_category_id as iconCategoryId,b.name as iconCategoryName,d.jump_url as jumpUrl,d.pic_url as picUrl,a.matter_number as businessType,
+		 a.matters_coding as type,a.coordination_area_type as TcqType,a.print_type as model,a.business_number as finishType,a.is_recommend as isRecommend from site_matters a,site_icon_category b,site_matters_area c,site_block d where
+a.icon_category_id=b.id and a.id=c.matters_id and a.block_ssm_id=d.id
+and c.area_id=#{areaId} and c.machine_number like CONCAT('%','${machineNumber}','%') and a.is_takes_effect=#{isTakesEffect}
+	</select>
+</mapper>
