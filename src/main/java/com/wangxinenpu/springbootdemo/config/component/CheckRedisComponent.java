@@ -1,6 +1,7 @@
 package com.wangxinenpu.springbootdemo.config.component;
 
 
+import com.wangxinenpu.springbootdemo.config.MyCacheConfig;
 import com.wangxinenpu.springbootdemo.constant.SysCheckCacheEnum;
 import com.wangxinenpu.springbootdemo.dataobject.vo.SysRoleDTO;
 import com.wangxinenpu.springbootdemo.service.facade.SysRoleFacade;
@@ -31,7 +32,7 @@ public class CheckRedisComponent {
 	 * @param map
 	 */
 	public void putRedis(String busId, Map<String, Object> map){
-		cachesKeyService.putInCache(SysCheckCacheEnum.SYS_CHECK_BUSINESS_ID, busId, map, SysCacheTimeDMO.CACHETIMEOUT_90D);//缓存90天
+		 MyCacheConfig.putInCache(SysCheckCacheEnum.SYS_CHECK_BUSINESS_ID, busId, map, SysCacheTimeDMO.CACHETIMEOUT_90D);//缓存90天
 	}
 	
 	/**
@@ -42,7 +43,7 @@ public class CheckRedisComponent {
 	 */
 	public boolean getRedis(String busId) throws BizRuleException{
 		
-		Map<String, Object> map = cachesKeyService.getFromCache(SysCheckCacheEnum.SYS_CHECK_BUSINESS_ID, busId);
+		Map<String, Object> map = (Map<String, Object>) MyCacheConfig.getFromCache(SysCheckCacheEnum.SYS_CHECK_BUSINESS_ID, busId);
 		if(null != map){
 			String type = map.get("type").toString();//操作类型
 			String bus = map.get("bus").toString();//操作业务

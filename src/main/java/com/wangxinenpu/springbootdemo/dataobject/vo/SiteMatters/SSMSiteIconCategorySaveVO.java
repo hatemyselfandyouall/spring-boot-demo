@@ -13,6 +13,7 @@ public class SSMSiteIconCategorySaveVO implements Serializable {
     SiteIconCategory siteIconCategory;
 
     List<SiteIconCategory> siteIconCategoryList;
+    List<Integer> categoryIds;
 
 
 }

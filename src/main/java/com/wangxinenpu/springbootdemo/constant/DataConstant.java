@@ -22,4 +22,16 @@ public class DataConstant {
     //1事项未生效2已生效
     public static Integer TYPE_MATTER_NO_USE=1;
     public static Integer TYPE_MATTER_IS_USE=2;
+
+    public static final Integer IS_LAST_USED = 1;
+    public static final Integer NOT_LAST_USED = 0;
+
+    //自助机软件类型（0.MONITOR_SERVER，1.HTTP，2.MONITOR_CLIENT)
+    public static String SOFTTYPE_MONITOR_SERVER = "0";
+    public static String SOFTTYPE_HTTP = "1";
+    public static String SOFTTYPE_MONITOR_CLIENT = "2";
+
+
+    public static Integer NO = 0;
+    public static Integer YES = 1;
 }

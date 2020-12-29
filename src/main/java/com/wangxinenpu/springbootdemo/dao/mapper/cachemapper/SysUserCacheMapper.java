@@ -1,6 +1,7 @@
 package com.wangxinenpu.springbootdemo.dao.mapper.cachemapper;
 
 
+import com.wangxinenpu.springbootdemo.config.MyCacheConfig;
 import com.wangxinenpu.springbootdemo.constant.SysbaseCacheEnum;
 import com.wangxinenpu.springbootdemo.dao.mapper.SysAreaMapper;
 import com.wangxinenpu.springbootdemo.dao.mapper.SysOrgDepartmentMapper;
@@ -161,12 +162,12 @@ public class SysUserCacheMapper {
 		
 		String cacheKey = String.valueOf(id);
 	
-		SysUserDTO retvo = cachesKeyService.getFromCache(SysbaseCacheEnum.SYSUSER_BY_ID, cacheKey);
+		SysUserDTO retvo = (SysUserDTO) MyCacheConfig.getFromCache(SysbaseCacheEnum.SYSUSER_BY_ID, cacheKey);
 		if(retvo==null) {
 			SysUser po = sysUserMapper.getByPrimaryKey(id);
 			if(po==null) return null;
 			retvo =  po.copyTo(SysUserDTO.class);
-			cachesKeyService.putInCache(SysbaseCacheEnum.SYSUSER_BY_ID, cacheKey, retvo);
+			 MyCacheConfig.putInCache(SysbaseCacheEnum.SYSUSER_BY_ID, cacheKey, retvo);
 		}
 		
 		return retvo;

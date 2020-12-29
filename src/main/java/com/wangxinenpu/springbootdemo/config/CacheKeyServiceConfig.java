@@ -4,10 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.JedisPoolConfig;
-import star.modules.cache.CachesKeyService;
-import star.modules.cache.JedisKeyService;
-import star.modules.cache.JedisPool;
-import star.modules.cache.JedisService;
+import star.modules.cache.*;
 
 @Configuration
 public class CacheKeyServiceConfig {
@@ -35,4 +32,7 @@ public class CacheKeyServiceConfig {
     JedisService jedisService(){
         return new JedisService();
     }
+
+    @Bean
+    CachesService cachesService(){return new CachesService();}
 }

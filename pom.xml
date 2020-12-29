@@ -144,6 +144,11 @@
 			<version>3.1</version>
 		</dependency>
 		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>30.1-jre</version>
+		</dependency>
+		<dependency>
 			<groupId>com.DmJdbcDriver18</groupId>
 			<artifactId>DmJdbcDriver18</artifactId>
 			<scope>system</scope>
