@@ -62,7 +62,7 @@ public class SysOrgDepartmentServiceImpl implements SysOrgDepartmentFacade {
             return resultVo;
         }
         SysOrgDepartment sysOrgDepartment=new SysOrgDepartment();
-        BeanUtils.copyProperties(sysOrgDepartmentSaveVO, sysOrgDepartment);
+        BeanUtils.copyProperties(sysOrgDepartment,sysOrgDepartmentSaveVO);
         SysOrgDepartment exampleObeject=new SysOrgDepartment();
         exampleObeject.setOrgId(sysOrgDepartmentSaveVO.getOrgId());
         exampleObeject.setName(sysOrgDepartmentSaveVO.getName());
