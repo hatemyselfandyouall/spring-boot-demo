@@ -11,9 +11,9 @@ import com.wangxinenpu.springbootdemo.dao.mapper.SysUserMapper;
 import com.wangxinenpu.springbootdemo.service.service.SysUserService;
 import com.wangxinenpu.springbootdemo.dataobject.po.SysUser;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import star.util.BeanUtils;
 import star.vo.result.ResultVo;
 import tk.mybatis.mapper.entity.Example;
 
@@ -62,7 +62,7 @@ public class SysOrgDepartmentServiceImpl implements SysOrgDepartmentFacade {
             return resultVo;
         }
         SysOrgDepartment sysOrgDepartment=new SysOrgDepartment();
-        BeanUtils.copyProperties(sysOrgDepartment,sysOrgDepartmentSaveVO);
+        BeanUtils.copyProperties(sysOrgDepartmentSaveVO,sysOrgDepartment);
         SysOrgDepartment exampleObeject=new SysOrgDepartment();
         exampleObeject.setOrgId(sysOrgDepartmentSaveVO.getOrgId());
         exampleObeject.setName(sysOrgDepartmentSaveVO.getName());

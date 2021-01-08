@@ -848,4 +848,6 @@ public class SysOrgController  {
     	result.setResult("初始化完成");
         return result;
     }
+
+
 }

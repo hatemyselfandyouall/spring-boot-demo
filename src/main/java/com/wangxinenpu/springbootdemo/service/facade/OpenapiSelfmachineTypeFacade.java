@@ -24,6 +24,9 @@ public interface OpenapiSelfmachineTypeFacade {
 
 
     List<OpenapiSelfmachineType> getAllTypes();
+
+    Integer checkDelete(OpenapiSelfmachineTypeDeleteVO openapiSelfmachineTypeDeleteVO);
+
 }
 
  

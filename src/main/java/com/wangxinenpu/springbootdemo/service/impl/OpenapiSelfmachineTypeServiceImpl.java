@@ -4,7 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
 import com.wangxinenpu.springbootdemo.constant.DataConstant;
+import com.wangxinenpu.springbootdemo.dao.mapper.selfmachine.OpenapiSelfmachineMapper;
 import com.wangxinenpu.springbootdemo.dao.mapper.selfmachine.OpenapiSelfmachineTypeMapper;
+import com.wangxinenpu.springbootdemo.dataobject.po.OpenapiSelfmachine;
 import com.wangxinenpu.springbootdemo.service.facade.OpenapiSelfmachineTypeFacade;
 import org.apache.commons.lang.StringUtils;
 import org.noggit.JSONUtil;
@@ -24,6 +26,8 @@ public class OpenapiSelfmachineTypeServiceImpl implements OpenapiSelfmachineType
 
     @Autowired
     OpenapiSelfmachineTypeMapper openapiSelfmachineTypeMapper;
+    @Autowired
+    OpenapiSelfmachineMapper openapiSelfmachineMapper;
 
 
     @Override
@@ -90,5 +94,18 @@ public class OpenapiSelfmachineTypeServiceImpl implements OpenapiSelfmachineType
     public List<OpenapiSelfmachineType> getAllTypes() {
         List<OpenapiSelfmachineType> openapiSelfmachineTypes=openapiSelfmachineTypeMapper.select(new OpenapiSelfmachineType().setIsDelete(DataConstant.NO_DELETE));
         return openapiSelfmachineTypes;
+    }
+
+    @Override
+    public Integer checkDelete(OpenapiSelfmachineTypeDeleteVO openapiSelfmachineTypeDeleteVO) {
+        if (openapiSelfmachineTypeDeleteVO==null||openapiSelfmachineTypeDeleteVO.getId()==null){
+            return 0;
+        }
+        OpenapiSelfmachineType openapiSelfmachineType=openapiSelfmachineTypeMapper.selectByPrimaryKey(openapiSelfmachineTypeDeleteVO.getId());
+        if (openapiSelfmachineMapper.selectCount(new OpenapiSelfmachine().setMachineTypeId(openapiSelfmachineType.getId()))>0){
+            return 0;
+        }else {
+            return 1;
+        }
     }
 }
