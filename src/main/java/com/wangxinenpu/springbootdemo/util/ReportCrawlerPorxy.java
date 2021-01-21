@@ -105,17 +105,19 @@ public  class ReportCrawlerPorxy  {
             "      <ser:GetSearchPay_Info>\n" +
             "         <!--Optional:-->\n" +
             "         <ser:RemottingService>\n" +
+            "         <![CDATA[<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<ROOT> \n" +
             "  <REQUEST> \n" +
-            "    <PARAM NAME=\"NOTICENO\">(NOTICENO)</PARAM>  \n" +
-            "    <PARAM NAME=\"CHANNELNO\">(CHANNELNO)</PARAM>  \n" +
-            "    <PARAM NAME=\"ORIGINALNOTICENO\">(ORIGINALNOTICENO)</PARAM>  \n" +
-            "    <PARAM NAME=\"YWCODE\">(YWCODE)</PARAM> \n" +
+            "    <PARAM NAME=\"NOTICENO\">#缴款单号</PARAM>  \n" +
+            "    <PARAM NAME=\"CHANNELNO\">#缴款单来源渠道编号</PARAM>  \n" +
+            "    <PARAM NAME=\"ORIGINALNOTICENO\">#业务单号</PARAM>  \n" +
+            "    <PARAM NAME=\"YWCODE\">#业务码</PARAM> \n" +
             "  </REQUEST>  \n" +
             "  <RESPONSE> \n" +
             "</RESPONSE> \n" +
             "</ROOT>\n" +
-            "</ser:RemottingService>\n" +
+            "]]>\n" +
+            "         </ser:RemottingService>\n" +
             "      </ser:GetSearchPay_Info>\n" +
             "   </soapenv:Body>\n" +
             "</soapenv:Envelope>";
@@ -208,23 +210,26 @@ public  class ReportCrawlerPorxy  {
         return "";
     }
 
-    public static SWPTPayVO returnSWPTPayVO(String result)  {
+    public static JSONObject returnSWPTPayVO(String result)  {
         String xml = result.replaceAll("&lt;", "<").replaceAll("&gt;", ">");
-        xml=XmlLoader.getMsgByXML(xml,"<NOTICEINFO>","</NOTICEINFO>");
+        xml=XmlLoader.getMsgByXML(xml,"<RESULT>","</RESULT>");
         JSONObject jsonObject = XmlLoader.xml2jsonObj(xml);
-        SWPTPayVO swptPayVO=JSONObject.parseObject(jsonObject.toJSONString(),SWPTPayVO.class);
-        return swptPayVO;
+        return jsonObject;
     }
 
     /**
+     * "    <PARAM NAME=\"NOTICENO\">#缴款单号</PARAM>  \n" +
+     *             "    <PARAM NAME=\"CHANNELNO\">#缴款单来源渠道编号</PARAM>  \n" +
+     *             "    <PARAM NAME=\"ORIGINALNOTICENO\">#业务单号</PARAM>  \n" +
+     *             "    <PARAM NAME=\"YWCODE\">#业务码</PARAM> \n" +
      * @param getSWPTPayResultVO
      * @return
      */
     public static String createGetPayResuleMsg(GetSWPTPayResultVO getSWPTPayResultVO) {
-        return GET_PAY_RESULT_STRING.replaceFirst("(CHANNELNO)",getSWPTPayResultVO.getCHANNELNO())
-                .replaceFirst("(NOTICENO)",getSWPTPayResultVO.getNOTICENO())
-                .replaceFirst("(ORIGINALNOTICENO)",getSWPTPayResultVO.getORIGINALNOTICENO())
-                .replaceFirst("(YWCODE)",getSWPTPayResultVO.getYWCODE());
+        return GET_PAY_RESULT_STRING.replaceFirst("#缴款单来源渠道编号",getSWPTPayResultVO.getCHANNELNO()!=null?getSWPTPayResultVO.getCHANNELNO():"")
+                .replaceFirst("#缴款单号",getSWPTPayResultVO.getNOTICENO()!=null?getSWPTPayResultVO.getNOTICENO():"")
+                .replaceFirst("#业务单号",getSWPTPayResultVO.getORIGINALNOTICENO()!=null?getSWPTPayResultVO.getORIGINALNOTICENO():"")
+                .replaceFirst("#业务码",getSWPTPayResultVO.getYWCODE()!=null?getSWPTPayResultVO.getYWCODE():"");
     }
 
     public static String createReFoundinSWPTMsg(SWPTRefundVO swptRefundVO) {

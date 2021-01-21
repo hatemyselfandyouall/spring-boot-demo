@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.io.CachedOutputStream;
+import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -42,14 +43,13 @@ public class CDATAOutInterceptor extends AbstractPhaseInterceptor<Message> {
 
             CachedOutputStream csnew = (CachedOutputStream) message.getContent(OutputStream.class);
             InputStream in = csnew.getInputStream();
-
+            Exchange exchange = message.getExchange();
+            String address=exchange.getEndpoint().getEndpointInfo().getAddress();
             String xml = IOUtils.toString(in);
-            log.info("记录到请求返回为" + xml);
+            log.info("被调用的接口为"+address+"记录到请求返回为" + xml);
 //转换的方式
-            xml = xml.replace("<body>", "<![CDATA[<?xml version=\"1.0\" encoding=\"UTF-8\"?><body>")
-                    .replace("<returnMessage>", "<returnMessage><![CDATA[")
-                    .replace("</returnMessage>", "]]></returnMessage>").replace("<returnCode>", "<returnCode><![CDATA[")
-                    .replace("</returnCode>", "]]></returnCode>");
+//            xml = xml.replace("<return>", "<return><![CDATA[<?xml version=\"1.0\" encoding=\"UTF-8\"?><ROOT>")
+//                    .replace("</return>", "</ROOT>]]></return>");
             // 这里对xml做处理，处理完后同理，写回流中
             System.out.println("replaceAfter" + xml);
             IOUtils.copy(new ByteArrayInputStream(xml.getBytes()), os);

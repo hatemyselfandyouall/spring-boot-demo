@@ -1,5 +1,6 @@
 package com.wangxinenpu.springbootdemo.dataobject.vo;
 
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -26,7 +27,6 @@ public class SWPTPayBackVO {
     private String ERRMSG;
 
     @ApiModelProperty("缴款单主记录信息")
-    private SWPTPayVO swptPayVO;
+    private JSONObject resultJson;
 
-    private SWPTRefundVO swptRefundVO;
 }

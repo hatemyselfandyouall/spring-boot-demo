@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.io.CachedOutputStream;
+import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -45,9 +46,11 @@ public class CDATAInInterceptor extends AbstractPhaseInterceptor<Message> {
             //如果是以上这种格式，在暴露的接口方法里才会真正接收到消息，而如果请求中在body里边，没有加方法命名空间和参数名称，直接就是消息体
             //那接口方法里是接收不到消息的，因为cxf是按照上面的这种格式去解析的，所以如果不符合上面的格式，就应该在这里做处理
             //……………………处理代码……………………
+            Exchange exchange = message.getExchange();
+            String address=exchange.getEndpoint().getEndpointInfo().getAddress();
             String result = new BufferedReader(new InputStreamReader(is))
                     .lines().collect(Collectors.joining(System.lineSeparator()));
-            log.info("记录到接口入参"+result);
+            log.info("被调用的接口为"+address+"记录到接口入参"+result);
 //            result=result.replaceFirst("<!\\[CDATA.*\\?>","").replaceFirst("]]>","");
             is = new ByteArrayInputStream(result.getBytes());
             if(is != null)

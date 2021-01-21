@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-public class OneResponseDTO {
+public class OneResponseResultDTO {
 
-    private OneResponseResultDTO RESULT;
+    private ResponseDetailDTO DETAIL;
 }

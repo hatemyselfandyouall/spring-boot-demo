@@ -9,5 +9,5 @@ import java.util.List;
 @Accessors(chain = true)
 public class BatchResponseDTO {
 
-    private BatchResponseResultDTO DETAIL;
+    private BatchResponseResultDTO RESULT;
 }
