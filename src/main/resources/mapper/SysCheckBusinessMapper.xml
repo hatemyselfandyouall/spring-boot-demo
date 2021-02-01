@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckBusinessMapper" >
+	<resultMap id="SysCheckBusiness" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckBusiness" >
+		<!--
+		  @haoxz11MyBatis
+		  审核业务表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="config_id" property="configId" jdbcType="BIGINT" />
+		<result column="operatio_name" property="operatioName" jdbcType="VARCHAR" />
+		<result column="arraignment_time" property="arraignmentTime" jdbcType="TIMESTAMP" />
+		<result column="arraignment_people" property="arraignmentPeople" jdbcType="VARCHAR" />
+		<result column="arraignment_people_id" property="arraignmentPeopleId" jdbcType="VARCHAR" />
+		<result column="task_status" property="taskStatus" jdbcType="VARCHAR" />
+		<result column="company_name" property="companyName" jdbcType="VARCHAR" />
+		<result column="credit_code" property="creditCode" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="VARCHAR" />
+		<result column="revoke_cause" property="revokeCause" jdbcType="VARCHAR" />
+		<result column="prseno" property="prseno" jdbcType="BIGINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysCheckBusiness" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckBusiness" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入审核业务表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_business (config_id, operatio_name, arraignment_time, 
+			arraignment_people, arraignment_people_id, 
+			task_status,company_name,credit_code,version,type,revoke_cause,prseno, create_time, modify_time)
+		values (#{configId,jdbcType=BIGINT}, #{operatioName,jdbcType=VARCHAR}, #{arraignmentTime,jdbcType=TIMESTAMP}, 
+			#{arraignmentPeople,jdbcType=VARCHAR}, #{arraignmentPeopleId,jdbcType=VARCHAR}, 
+			#{taskStatus,jdbcType=VARCHAR},#{companyName,jdbcType=VARCHAR},
+			#{creditCode,jdbcType=VARCHAR},#{version,jdbcType=VARCHAR},#{type,jdbcType=VARCHAR},#{revokeCause,jdbcType=VARCHAR},#{prseno,jdbcType=BIGINT}, sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysCheckBusiness" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckBusiness" >
+		<!--
+		  @haoxz11MyBatis
+		  更新审核业务表记录
+		-->
+		update sys_check_business
+		<set >
+			<if test="configId != null" >
+				config_id = #{configId,jdbcType=BIGINT},
+			</if>
+			<if test="operatioName != null" >
+				operatio_name = #{operatioName,jdbcType=VARCHAR},
+			</if>
+			<if test="arraignmentTime != null" >
+				arraignment_time = #{arraignmentTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="arraignmentPeople != null" >
+				arraignment_people = #{arraignmentPeople,jdbcType=VARCHAR},
+			</if>
+			<if test="arraignmentPeopleId != null" >
+				arraignment_people_id = #{arraignmentPeopleId,jdbcType=VARCHAR},
+			</if>
+			<if test="taskStatus != null" >
+				task_status = #{taskStatus,jdbcType=VARCHAR},
+			</if>
+			<if test="companyName != null" >
+				company_name = #{companyName,jdbcType=VARCHAR},
+			</if>
+			<if test="creditCode != null" >
+				credit_code = #{creditCode,jdbcType=VARCHAR},
+			</if>
+			<if test="version != null" >
+				version = #{version,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null" >
+				type = #{type,jdbcType=VARCHAR},
+			</if>
+			<if test="revokeCause != null" >
+				revoke_cause = #{revokeCause,jdbcType=VARCHAR},
+			</if>
+			<if test="prseno != null" >
+				prseno = #{prseno,jdbcType=BIGINT},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckBusiness" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询审核业务表记录
+		-->
+		select  * from sys_check_business where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索审核业务表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="configId != null" >
+				<![CDATA[ AND config_id = #{configId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="operatioName != null" >
+				<![CDATA[ AND operatio_name = #{operatioName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="arraignmentTime != null" >
+				<![CDATA[ AND arraignment_time = #{arraignmentTime,jdbcType=TIMESTAMP} ]]> 
+			</if>
+			<if test="arraignmentPeople != null" >
+				<![CDATA[ AND arraignment_people = #{arraignmentPeople,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="arraignmentPeopleId != null" >
+				<![CDATA[ AND arraignment_people_id = #{arraignmentPeopleId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="taskStatus != null" >
+				<![CDATA[ AND task_status = #{taskStatus,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="companyName != null" >
+				<![CDATA[ AND company_name = #{companyName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="creditCode != null" >
+				<![CDATA[ AND credit_code = #{creditCode,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="version != null" >
+				<![CDATA[ AND version = #{version,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="type != null" >
+				<![CDATA[ AND type = #{type,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="revokeCause != null" >
+				<![CDATA[ AND revoke_cause = #{revokeCause,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="prseno != null" >
+				<![CDATA[ AND prseno = #{prseno,jdbcType=BIGINT} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysCheckBusinessDTO" parameterType="map" >
+			select  
+			b.id,b.config_id as configId,b.operatio_name as operatioName,b.arraignment_time as arraignmentTime,
+			b.arraignment_people as arraignmentPeople,b.arraignment_people_id as arraignmentPeopleId,
+			b.task_status as taskStatus,b.company_name as companyName,
+			b.credit_code as creditCode,b.version as version,b.type as type,b.revoke_cause as revokeCause,prseno
+			from sys_check_business b where 1=1
+			<if test="id != null and id!=''" >
+				and b.id = #{id,jdbcType=BIGINT}
+			</if>
+		    <if test="prseno != null and prseno!=''" >
+			and b.prseno = #{prseno,jdbcType=BIGINT}
+		    </if>
+			<if test="operatioName !=null and  operatioName!='' ">
+				and b.operatio_name like concat('%',#{operatioName,jdbcType=VARCHAR},'%')
+			</if>
+			<if test="arraignmentPeopleId !=null and  arraignmentPeopleId!='' ">
+				and b.arraignment_people_id= #{arraignmentPeopleId,jdbcType=VARCHAR}
+			</if>
+			<if test="taskStatus !=null and  taskStatus!='' ">
+				and b.task_status= #{taskStatus,jdbcType=VARCHAR}
+			</if>
+			<if test="startArraignmentTime !=null and  startArraignmentTime!='' ">
+				and b.arraignment_time >= #{startArraignmentTime,jdbcType=VARCHAR}
+			</if>
+			<if test="endArraignmentTime !=null and  endArraignmentTime!='' ">
+				<![CDATA[and b.arraignment_time <= #{endArraignmentTime,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="arraignmentPeople != null and  arraignmentPeople!=''" >
+				and b.arraignment_people like concat('%',#{arraignmentPeople,jdbcType=VARCHAR},'%')
+			</if>
+			order by b.create_time DESC
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		select count(*) from sys_check_business b where 1=1
+			<if test="id != null and id!=''" >
+				and b.id = #{id,jdbcType=BIGINT}
+			</if>
+			<if test="operatioName !=null and  operatioName!='' ">
+				and b.operatio_name like concat('%',#{operatioName,jdbcType=VARCHAR},'%')
+			</if>
+			<if test="arraignmentPeopleId !=null and  arraignmentPeopleId!='' ">
+				and b.arraignment_people_id= #{arraignmentPeopleId,jdbcType=VARCHAR}
+			</if>
+			<if test="taskStatus !=null and  taskStatus!='' ">
+				and b.task_status= #{taskStatus,jdbcType=VARCHAR}
+			</if>
+			<if test="startArraignmentTime !=null and  startArraignmentTime!='' ">
+				and b.arraignment_time >= #{startArraignmentTime,jdbcType=VARCHAR}
+			</if>
+			<if test="endArraignmentTime !=null and  endArraignmentTime!='' ">
+				<![CDATA[and b.arraignment_time <= #{endArraignmentTime,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="arraignmentPeople != null and  arraignmentPeople!=''" >
+				and b.arraignment_people like concat('%',#{arraignmentPeople,jdbcType=VARCHAR},'%')
+			</if>
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_business where id = #{id,jdbcType=BIGINT}
+	</delete>
+	
+	<!-- 查询审核业务列表 -->
+	<select id="getBusinessList" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysCheckBusinessDTO" parameterType="map" >
+		select  * from sys_check_business
+		<include refid="whereSQL" />
+	</select>
+</mapper>

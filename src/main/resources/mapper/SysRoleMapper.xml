@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysRoleMapper">
+	<resultMap id="SysRole" type="com.wangxinenpu.springbootdemo.dataobject.po.SysRole">
+		<!--
+		  @haoxz11MyBatis
+		  系统角色表
+		-->
+		<id column="id" jdbcType="VARCHAR" property="id" />
+		<result column="role_name" jdbcType="VARCHAR" property="roleName" />
+		<result column="role_desc" jdbcType="VARCHAR" property="roleDesc" />
+		<result column="role_type" jdbcType="VARCHAR" property="roleType" />
+		<result column="org_id" jdbcType="BIGINT" property="orgId" />
+		<result column="area_id" jdbcType="BIGINT" property="areaId" />
+		<result column="creator_id" jdbcType="VARCHAR" property="creatorId" />
+		<result column="active" jdbcType="VARCHAR" property="active" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+		<result column="position" jdbcType="VARCHAR" property="position" />
+		<result column="role_code" jdbcType="VARCHAR" property="roleCode" />
+
+	</resultMap>
+	<insert id="insertSysRole" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRole">
+		<!--
+		  @haoxz11MyBatis
+		  插入系统角色记录
+		-->
+		<![CDATA[
+		insert into sys_role (id, role_name, role_desc, 
+			role_type, org_id, area_id, 
+			creator_id,active,position, create_time, modify_time,role_code)
+		values (#{id,jdbcType=VARCHAR}, #{roleName,jdbcType=VARCHAR}, #{roleDesc,jdbcType=VARCHAR}, 
+			#{roleType,jdbcType=VARCHAR}, #{orgId,jdbcType=BIGINT}, #{areaId,jdbcType=BIGINT}, 
+			#{creatorId,jdbcType=VARCHAR},#{active,jdbcType=VARCHAR},#{position,jdbcType=VARCHAR}, sysdate(), sysdate(),#{roleCode,jdbcType=VARCHAR})
+		]]>
+	</insert>
+	<update id="updateSysRole" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRole">
+		<!--
+		  @haoxz11MyBatis
+		  更新系统角色记录
+		-->
+		update sys_role
+		<set>
+			<if test="roleName != null">
+				role_name = #{roleName,jdbcType=VARCHAR},
+			</if>
+			<if test="roleDesc != null">
+				role_desc = #{roleDesc,jdbcType=VARCHAR},
+			</if>
+			<if test="roleType != null">
+				role_type = #{roleType,jdbcType=VARCHAR},
+			</if>
+			<if test="orgId != null">
+				org_id = #{orgId,jdbcType=BIGINT},
+			</if>
+			<if test="areaId != null">
+				area_id = #{areaId,jdbcType=BIGINT},
+			</if>
+			<if test="creatorId != null">
+				creator_id = #{creatorId,jdbcType=VARCHAR},
+			</if>
+			<if test="active != null">
+				active = #{active,jdbcType=VARCHAR},
+			</if>
+			<if test="position != null">
+				position = #{position,jdbcType=VARCHAR},
+			</if>
+			<if test="roleCode != null">
+				role_code = #{roleCode,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=VARCHAR}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.String" resultMap="SysRole">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询系统角色记录
+		-->
+		select  * from sys_role where id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysRole">
+		<!--
+		  @haoxz11MyBatis
+		  搜索系统角色列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_role
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+		<if test="ORDERLIST == null">
+			 ORDER BY create_time desc
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索系统角色的记录数量
+		-->
+		select count(*) from sys_role
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索系统角色记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="roleName != null and roleName !=''">
+				<![CDATA[ AND role_name like concat('%',#{roleName,jdbcType=VARCHAR},'%') ]]> 
+			</if>
+			<if test="roleDesc != null and roleDesc !=''">
+				<![CDATA[ AND role_desc like concat('%',#{roleDesc,jdbcType=VARCHAR},'%') ]]> 
+			</if>
+			<if test="roleType != null and roleType !=''">
+				<![CDATA[ AND role_type = #{roleType,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="roleTypes != null and roleTypes != ''">
+				<![CDATA[ AND role_type in(${roleTypes}) ]]>
+			</if>
+			<if test="orgId != null and orgId != ''">
+				<![CDATA[ AND org_id = #{orgId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="areaId != null">
+				<![CDATA[ AND area_id = #{areaId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="creatorId != null">
+				<![CDATA[ AND creator_id = #{creatorId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="active != null">
+				<![CDATA[ AND active = #{active,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="orgIds != null and orgIds != ''">
+				<![CDATA[ AND org_id in(${orgIds}) ]]> 
+			</if>
+			<if test="position != null">
+				<![CDATA[ AND position = #{position,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="roleCode != null">
+				<![CDATA[ AND role_code = #{roleCode,jdbcType=VARCHAR} ]]>
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 根据角色名、机构ID和角色ID查询 -->
+	<select id="getByRoleNameAndRoleId" parameterType="map" resultMap="SysRole">
+		select * from sys_role a
+		<where>
+			<if test="roleName!=null and  roleName!='' ">
+				a.role_name = #{roleName,jdbcType=VARCHAR}
+			</if>
+			<if test="roleId!=null and  roleId!='' ">
+				and a.id != #{roleId,jdbcType=BIGINT}
+			</if>
+			<if test="orgId!=null and  orgId!='' ">
+				and a.org_id = #{orgId,jdbcType=BIGINT}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 角色删除 -->
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    	delete from sys_role where id = #{id,jdbcType=VARCHAR}
+  	</delete>
+  	
+  	<!-- 查询当前用户拥有的角色-->
+	<select id="queryRoleByUserId" parameterType="java.lang.String" resultMap="SysRole">
+		select r.* from sys_role r ,sys_user_role ur where r.id=ur.role_id and ur.user_id = #{userId,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 查询超级管理员角色-->
+	<select id="queryByAdmin" parameterType="java.lang.String" resultMap="SysRole">
+		select * from sys_role where active='1'
+	</select>
+	
+	<!-- 根据区域查询角色-->
+	<select id="queryRoleByArea" parameterType="java.lang.Long" resultMap="SysRole">
+		select * from sys_role t where active='1' and t.role_type='2' and t.area_id = #{areaId,jdbcType=BIGINT}
+	</select>
+	
+	<!-- 根据机构查询角色-->
+	<select id="queryByOrgId" parameterType="java.lang.Long" resultMap="SysRole">
+		select * from sys_role t where active='1' and t.org_id = #{orgId,jdbcType=BIGINT}
+	</select>
+	
+	<!-- 查询普通用户角色 -->
+	<select id="findAllByRoletype" parameterType="java.lang.String" resultMap="SysRole">
+		select * from sys_role t where active='1' and t.role_type=#{roleType,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 查询机构普通用户角色 -->
+	<select id="findByRoletypeAndOrgid" parameterType="java.lang.Long" resultMap="SysRole">
+		select * from sys_role t where active='1' and t.role_type='2' and t.org_id = #{orgId,jdbcType=BIGINT}
+	</select>
+
+	<select id="findByRoletypeAndOrgIds"  resultMap="SysRole">
+		select * from sys_role t where active='1'
+		<if test="type !=null and type!=''">
+		 and t.role_type=#{type}
+		</if>
+		 and t.org_id in
+		 <foreach collection="orgIds" item="item" separator="," close=")" open="(" >
+			#{item}
+		</foreach>
+	</select>
+
+	<!-- 查询区域普通用户角色 -->
+	<select id="queryRoleByRoletypeAndAreaid" parameterType="java.lang.Long" resultMap="SysRole">
+		select * from sys_role t where active='1' and t.role_type='2' and t.area_id = #{areaId,jdbcType=BIGINT}
+	</select>
+	
+	<!-- 查询所有角色 -->
+	<select id="findAll" parameterType="java.lang.String" resultMap="SysRole">
+		select * from sys_role where active='1'
+	</select>
+	
+	<!-- 根据系统类型和机构查询-->
+	<select id="findRoleByFunType" parameterType="map" resultMap="SysRole">
+		select * from sys_role
+		<where>
+			active='1'
+			<if test="funType == 1">
+				and role_type = 1 or role_type = 3
+			</if>
+			<if test="funType == 2">
+				and role_type = 4
+			</if>
+			<if test="orgId != null and orgId != ''">
+				and org_id = #{orgId,jdbcType=BIGINT}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 批量新增角色-->
+	<insert id="insertByBatch" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRole">
+		insert into sys_role (id, role_name, role_desc, 
+			role_type, org_id, area_id, 
+			creator_id,active,position, create_time, modify_time)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id,jdbcType=VARCHAR}, #{item.roleName,jdbcType=VARCHAR}, #{item.roleDesc,jdbcType=VARCHAR}, 
+			#{item.roleType,jdbcType=VARCHAR}, #{item.orgId,jdbcType=BIGINT}, #{item.areaId,jdbcType=BIGINT}, 
+			#{item.creatorId,jdbcType=VARCHAR},#{item.active,jdbcType=VARCHAR},#{item.position,jdbcType=VARCHAR},sysdate(),sysdate())
+        </foreach>
+	</insert>
+	<select id="findByRoleName" parameterType="java.lang.String" resultMap="SysRole">
+		select * from sys_role t where t.role_name=#{roleName,jdbcType=VARCHAR}
+	</select>
+
+	<select id="findRoleAndFunction" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysRoleDTO">
+		select a.id as id,a.role_name as roleName,a.role_desc as roleDesc,a.role_type as roleType,d.org_name as orgName,a.position as position,c.title as title,c.fun_type as funType from sys_role a left outer join sys_role_function b on a.id=b.role_id left outer join sys_function c on b.function_id=c.id left outer join sys_org d on a.org_id=d.id where a.active=1
+		<if test="roleName != null">
+		   and a.role_name like concat('%',#{roleName},'%')
+		</if>
+		<if test="roleDesc != null">
+			and a.role_desc like concat('%',#{roleDesc},'%')
+		</if>
+		<if test="orgId != null">
+			and a.org_id =#{orgId}
+		</if>
+		<if test="roleType != null">
+			and a.role_type =#{roleType}
+		</if>
+	</select>
+
+
+	<select id="fidno" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysRoleDTO">
+		select id,role_name as roleName from sys_role where org_id in (
+		select id from sys_org where parent_id in (select id from sys_org where parent_id=12) and orgenter_code is not null and orgenter_code&lt;&gt;'' and id&lt;&gt;1115)
+		and DATE_FORMAT(create_time,'%m-%d-%Y')='06-29-2020' and org_id&lt;&gt;1108 ORDER by org_id;
+	</select>
+
+	<select id="fidyes" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysRoleFunctionDTO">
+			select b.function_id as functionId,b.select_state as selectState from sys_role a,sys_role_function b where a.org_id=1108 and DATE_FORMAT(a.create_time,'%m-%d-%Y')='06-29-2020' and a.role_name=#{roleName} and a.id=b.role_id
+	</select>
+
+
+	<select id="findRoleInRoleCode" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysRoleDTO">
+		select a.id as id,a.role_name as roleName,a.role_desc as roleDesc,a.role_type as roleType,a.position as position from sys_role a
+		where a.role_code in
+		<foreach collection="RoleCodes" item="roleCode" index="index" open="(" close=")" separator=",">
+			#{roleCode}
+		</foreach>
+	</select>
+</mapper>

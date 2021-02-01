@@ -1,7 +1,6 @@
 package com.wangxinenpu.springbootdemo.controller;
 
 import com.wangxinenpu.springbootdemo.dataobject.User;
-import com.wangxinenpu.springbootdemo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,8 +17,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TestController {
 
-    @Autowired
-    UserService userService;
+
 
 
     @Autowired
@@ -32,11 +30,7 @@ public class TestController {
         return "hello Spring";
     }
 
-    @RequestMapping(value = "mybtaisTest",method = RequestMethod.GET)
-    public User mybtaisTest(@RequestParam(value = "id")Integer id){
-        User sysUser=userService.getById(id);
-        return sysUser;
-    }
+
 
     @RequestMapping(value = "doCurl",method = RequestMethod.GET)
     public ResponseEntity<String>  doCurl(@RequestParam("url")String url){

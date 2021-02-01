@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysOrginstypeMapper" >
+	<resultMap id="SysOrginstype" type="com.wangxinenpu.springbootdemo.dataobject.po.SysOrginstype" >
+		<!--
+		  @haoxz11MyBatis
+		  机构险种表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="org_id" property="orgId" jdbcType="BIGINT" />
+		<result column="ins_id" property="insId" jdbcType="BIGINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysOrginstype" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysOrginstype" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入机构险种表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_orginstype (org_id, ins_id, create_time, modify_time)
+		values (#{orgId,jdbcType=BIGINT}, #{insId,jdbcType=BIGINT}, sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysOrginstype" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysOrginstype" >
+		<!--
+		  @haoxz11MyBatis
+		  更新机构险种表记录
+		-->
+		update sys_orginstype
+		<set >
+			<if test="orgId != null" >
+				org_id = #{orgId,jdbcType=BIGINT},
+			</if>
+			<if test="insId != null" >
+				ins_id = #{insId,jdbcType=BIGINT},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysOrginstype" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询机构险种表记录
+		-->
+		select  * from sys_orginstype where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索机构险种表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="orgId != null" >
+				<![CDATA[ AND org_id = #{orgId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="insId != null" >
+				<![CDATA[ AND ins_id = #{insId,jdbcType=BIGINT} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysOrginstype" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索机构险种表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_orginstype
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索机构险种表的记录数量
+		-->
+		select count(*) from sys_orginstype
+		<include refid="whereSQL" />
+	</select>
+	
+	<!-- 根据机构ID查询 -->
+	<select id="findByOrgId" parameterType="java.lang.Long" resultMap="SysOrginstype">
+		select  o.*,c.code_value as codeValue from sys_orginstype o,sys_code c where o.ins_id=c.id and o.org_id = #{orgId,jdbcType=BIGINT}
+	</select>
+	
+	<!-- 根据机构ID删除 -->
+	<delete id="deleteByOrgId" parameterType="java.lang.Long">
+    	delete from sys_orginstype where org_id = #{orgId,jdbcType=BIGINT}
+  	</delete>
+  	
+  	<!--根据机构ID和险种ID查询是否绑定 -->
+  	<select id="existenceByOrgIdAndInsId" resultMap="SysOrginstype" parameterType="map" >
+		select * from sys_orginstype where org_id = #{orgId,jdbcType=BIGINT} and ins_id  = (select id from sys_code where code_value =#{insId,jdbcType=VARCHAR})
+	</select>
+</mapper>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysAreaMapper" >
+	<resultMap id="SysArea" type="com.wangxinenpu.springbootdemo.dataobject.po.SysArea" >
+		<!--
+		  @haoxz11MyBatis
+		  区域表表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="area_name" property="areaName" jdbcType="VARCHAR" />
+		<result column="aaa147" property="aaa147" jdbcType="VARCHAR" />
+		<result column="parent_id" property="parentId" jdbcType="VARCHAR" />
+		<result column="prseno" property="prseno" jdbcType="BIGINT" />
+		<result column="eae037" property="eae037" jdbcType="VARCHAR" />
+		<result column="idpath" property="idpath" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysArea" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysArea" >
+		<!--
+		  @haoxz11MyBatis
+		  插入区域表记录
+		-->
+		<![CDATA[
+		insert into sys_area (id, area_name, aaa147, 
+			parent_id, prseno, eae037, 
+			idpath, create_time, modify_time)
+		values (#{id,jdbcType=BIGINT}, #{areaName,jdbcType=VARCHAR}, #{aaa147,jdbcType=VARCHAR}, 
+			#{parentId,jdbcType=VARCHAR}, #{prseno,jdbcType=BIGINT}, #{eae037,jdbcType=VARCHAR}, 
+			#{idpath,jdbcType=VARCHAR}, sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysArea" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysArea" >
+		<!--
+		  @haoxz11MyBatis
+		  更新区域表记录
+		-->
+		update sys_area
+		<set >
+			<if test="areaName != null" >
+				area_name = #{areaName,jdbcType=VARCHAR},
+			</if>
+			<if test="aaa147 != null" >
+				aaa147 = #{aaa147,jdbcType=VARCHAR},
+			</if>
+			<if test="parentId != null" >
+				parent_id = #{parentId,jdbcType=VARCHAR},
+			</if>
+			<if test="prseno != null" >
+				prseno = #{prseno,jdbcType=BIGINT},
+			</if>
+			<if test="eae037 != null" >
+				eae037 = #{eae037,jdbcType=VARCHAR},
+			</if>
+			<if test="idpath != null" >
+				idpath = #{idpath,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysArea" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询区域表记录
+		-->
+		select  * from sys_area where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索区域表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="areaName != null" >
+				<![CDATA[ AND area_name = #{areaName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="aaa147 != null" >
+				<![CDATA[ AND aaa147 = #{aaa147,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="parentId != null" >
+				<![CDATA[ AND parent_id = #{parentId,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="prseno != null" >
+				<![CDATA[ AND prseno = #{prseno,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="eae037 != null" >
+				<![CDATA[ AND eae037 = #{eae037,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="idpath != null" >
+				<![CDATA[ AND idpath = #{idpath,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysArea" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索区域表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_area
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索区域表的记录数量
+		-->
+		select count(*) from sys_area
+		<include refid="whereSQL" />
+	</select>
+	
+	<!-- 查询所有区域 -->
+	<select id="findAll" parameterType="java.lang.Long" resultMap="SysArea">
+		select  * from sys_area order by id
+	</select>
+	
+	<!-- 根据id查询下级区域-->
+	<select id="findByParentId" parameterType="java.lang.Long" resultMap="SysArea">
+		select  * from sys_area where parent_id = #{id,jdbcType=BIGINT} order by id
+	</select>
+	
+	<!-- 查询关联区域-->
+	<select id="findByIdpath" parameterType="java.lang.String" resultMap="SysArea">
+		select  * from sys_area where idpath like concat('%',#{idpath,jdbcType=VARCHAR},'%')
+	</select>
+	
+	<!-- 查询用户关联区域（医保用）-->
+	<select id="queryAreaListByUserId" parameterType="java.lang.Long" resultMap="SysArea">
+		select * from sys_area where id in(select area_id from sys_user_area where user_id =#{userId,jdbcType=BIGINT})
+	</select>
+
+	<select id="findByAreaName" parameterType="java.lang.String" resultMap="SysArea">
+		select  * from sys_area where area_name = #{areaName,jdbcType=VARCHAR}
+	</select>
+
+	<select id="listByAreaName" parameterType="java.lang.String" resultMap="SysArea">
+		select  * from sys_area where area_name = #{areaName,jdbcType=VARCHAR}
+	</select>
+
+	<select id="findAllByParentIdNull" parameterType="java.lang.String" resultMap="SysArea">
+		select  * from sys_area where parent_id is not null
+	</select>
+
+	<select id="findAllByParentId" parameterType="java.lang.String" resultMap="SysArea">
+		select  * from sys_area where parent_id=#{parentId}
+	</select>
+
+	<select id="getAreaInfo" parameterType="java.lang.Long" resultType="com.wangxinenpu.springbootdemo.dataobject.vo.SysAreaNameDTO">
+		SELECT b.area_name as city,a.area_name as region FROM sys_area a,sys_area b WHERE b.id=a.parent_id and a.id=#{id};
+	</select>
+
+</mapper>

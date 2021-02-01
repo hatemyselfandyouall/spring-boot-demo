@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysCheckErrMsgMapper" >
+	<resultMap id="SysCheckErrMsg" type="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckErrMsg" >
+		<!--
+		  @haoxz11MyBatis
+		 业务异常消息表
+		-->
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="bus_id" property="busId" jdbcType="BIGINT" />
+		<result column="err_msg" property="errMsg" jdbcType="VARCHAR" />
+		<result column="reserve" property="reserve" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<insert id="insertSysCheckErrMsg" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckErrMsg" useGeneratedKeys="true" >
+		<!--
+		  @haoxz11MyBatis
+		  插入业务异常消息表记录
+		-->
+		<selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_check_err_msg (bus_id, err_msg, reserve, create_time, modify_time
+			)
+		values (#{busId,jdbcType=BIGINT}, #{errMsg,jdbcType=VARCHAR}, #{reserve,jdbcType=VARCHAR}, sysdate(), sysdate()
+			)
+		]]>
+	</insert>
+	<update id="updateSysCheckErrMsg" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysCheckErrMsg" >
+		<!--
+		  @haoxz11MyBatis
+		  更新业务异常消息表记录
+		-->
+		update sys_check_err_msg
+		<set >
+			<if test="busId != null" >
+				bus_id = #{busId,jdbcType=BIGINT},
+			</if>
+			<if test="errMsg != null" >
+				err_msg = #{errMsg,jdbcType=VARCHAR},
+			</if>
+			<if test="reserve != null" >
+				reserve = #{reserve,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" resultMap="SysCheckErrMsg" parameterType="java.lang.Long" >
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询业务异常消息表记录
+		-->
+		select  * from sys_check_err_msg where id = #{id,jdbcType=BIGINT}
+	</select>
+	<sql id="whereSQL" >
+		<!--
+		
+		  搜索业务异常消息表记录，可修改
+		-->
+		<where >
+			<if test="id != null" >
+				<![CDATA[ AND id = #{id,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="busId != null" >
+				<![CDATA[ AND bus_id = #{busId,jdbcType=BIGINT} ]]> 
+			</if>
+			<if test="errMsg != null" >
+				<![CDATA[ AND err_msg = #{errMsg,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="reserve != null" >
+				<![CDATA[ AND reserve = #{reserve,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+	<select id="getListByWhere" resultMap="SysCheckErrMsg" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  搜索业务异常消息表列表
+		-->
+		select
+		<if test="FIELDS != null" >
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null" >
+			*
+		</if>
+		from sys_check_err_msg
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null" >
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" resultType="java.lang.Integer" parameterType="map" >
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索业务异常消息表的记录数量
+		-->
+		select count(*) from sys_check_err_msg
+		<include refid="whereSQL" />
+	</select>
+	
+	<!--根据用ID删除 -->
+	<delete id="deleteById"  parameterType="java.lang.Long">
+		delete from sys_check_err_msg where id = #{id,jdbcType=BIGINT}
+	</delete>
+</mapper>

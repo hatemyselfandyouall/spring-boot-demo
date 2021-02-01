@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangxinenpu.springbootdemo.dao.mapper.SysRuleMapper">
+	<resultMap id="SysRule" type="com.wangxinenpu.springbootdemo.dataobject.po.SysRule">
+		<!--
+		  @haoxz11MyBatis
+		  系统规则表表
+		-->
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="rule_name" jdbcType="VARCHAR" property="ruleName" />
+		<result column="detaile" jdbcType="VARCHAR" property="detaile" />
+		<result column="rule_type" jdbcType="VARCHAR" property="ruleType" />
+		<result column="creater" jdbcType="VARCHAR" property="creater" />
+		<result column="active" jdbcType="VARCHAR" property="active" />
+		<result column="parent_id" jdbcType="BIGINT" property="parentId" />
+		<result column="e_name" jdbcType="VARCHAR" property="eName" />
+		<result column="rule_path" jdbcType="VARCHAR" property="rulePath" />
+		<result column="input" jdbcType="VARCHAR" property="input" />
+		<result column="output" jdbcType="VARCHAR" property="output" />
+		<result column="index_flag" jdbcType="VARCHAR" property="indexFlag" />
+		<result column="is_create" jdbcType="VARCHAR" property="isCreate" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	</resultMap>
+	<insert id="insertSysRule" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRule" useGeneratedKeys="true">
+		<!--
+		  @haoxz11MyBatis
+		  插入系统规则表记录
+		-->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+		<![CDATA[
+		insert into sys_rule (rule_name, detaile, rule_type, 
+			creater, active, parent_id, 
+			e_name, rule_path, `input`, 
+			`output`, index_flag, is_create, 
+			create_time, modify_time)
+		values (#{ruleName,jdbcType=VARCHAR}, #{detaile,jdbcType=VARCHAR}, #{ruleType,jdbcType=VARCHAR}, 
+			#{creater,jdbcType=VARCHAR}, #{active,jdbcType=VARCHAR}, #{parentId,jdbcType=BIGINT}, 
+			#{eName,jdbcType=VARCHAR}, #{rulePath,jdbcType=VARCHAR}, #{input,jdbcType=VARCHAR}, 
+			#{output,jdbcType=VARCHAR}, #{indexFlag,jdbcType=VARCHAR}, #{isCreate,jdbcType=VARCHAR}, 
+			sysdate(), sysdate())
+		]]>
+	</insert>
+	<update id="updateSysRule" parameterType="com.wangxinenpu.springbootdemo.dataobject.po.SysRule">
+		<!--
+		  @haoxz11MyBatis
+		  更新系统规则表记录
+		-->
+		update sys_rule
+		<set>
+			<if test="ruleName != null">
+				rule_name = #{ruleName,jdbcType=VARCHAR},
+			</if>
+			<if test="detaile != null">
+				detaile = #{detaile,jdbcType=VARCHAR},
+			</if>
+			<if test="ruleType != null">
+				rule_type = #{ruleType,jdbcType=VARCHAR},
+			</if>
+			<if test="creater != null">
+				creater = #{creater,jdbcType=VARCHAR},
+			</if>
+			<if test="active != null">
+				active = #{active,jdbcType=VARCHAR},
+			</if>
+			<if test="parentId != null">
+				parent_id = #{parentId,jdbcType=BIGINT},
+			</if>
+			<if test="eName != null">
+				e_name = #{eName,jdbcType=VARCHAR},
+			</if>
+			<if test="rulePath != null">
+				rule_path = #{rulePath,jdbcType=VARCHAR},
+			</if>
+			<if test="input != null">
+				`input` = #{input,jdbcType=VARCHAR},
+			</if>
+			<if test="output != null">
+				`output` = #{output,jdbcType=VARCHAR},
+			</if>
+			<if test="indexFlag != null">
+				index_flag = #{indexFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="isCreate != null">
+				is_create = #{isCreate,jdbcType=VARCHAR},
+			</if>
+			modify_time = sysdate()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<select id="getByPrimaryKey" parameterType="java.lang.Long" resultMap="SysRule">
+		<!--
+		  @haoxz11MyBatis
+		  根据主键查询系统规则表记录
+		-->
+		select  * from sys_rule where id = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getListByWhere" parameterType="map" resultMap="SysRule">
+		<!--
+		  @haoxz11MyBatis
+		  搜索系统规则表列表
+		-->
+		select
+		<if test="FIELDS != null">
+			${FIELDS}
+		</if>
+		<if test="FIELDS == null">
+			*
+		</if>
+		from sys_rule
+		<include refid="whereSQL" />
+		<if test="ORDERLIST != null">
+			 ORDER BY ${ORDERLIST}
+		</if>
+	</select>
+	<select id="getCountByWhere" parameterType="map" resultType="java.lang.Integer">
+		<!--
+		  @haoxz11MyBatis
+		  得到搜索系统规则表的记录数量
+		-->
+		select count(*) from sys_rule
+		<include refid="whereSQL" />
+	</select>
+	<sql id="whereSQL">
+		<!--
+		
+		  搜索系统规则表记录，可修改
+		-->
+		<where>
+			<if test="id != null">
+				<![CDATA[ AND id = #{id,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="ruleName != null">
+				<![CDATA[ AND rule_name = #{ruleName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="detaile != null">
+				<![CDATA[ AND detaile = #{detaile,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="ruleType != null">
+				<![CDATA[ AND rule_type = #{ruleType,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="creater != null">
+				<![CDATA[ AND creater = #{creater,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="active != null">
+				<![CDATA[ AND active = #{active,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="parentId != null">
+				<![CDATA[ AND parent_id = #{parentId,jdbcType=INTEGER} ]]> 
+			</if>
+			<if test="eName != null">
+				<![CDATA[ AND e_name = #{eName,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="rulePath != null">
+				<![CDATA[ AND rule_path = #{rulePath,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="input != null">
+				<![CDATA[ AND `input` = #{input,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="output != null">
+				<![CDATA[ AND `output` = #{output,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="indexFlag != null">
+				<![CDATA[ AND index_flag = #{indexFlag,jdbcType=VARCHAR} ]]> 
+			</if>
+			<if test="isCreate != null">
+				<![CDATA[ AND is_create = #{isCreate,jdbcType=VARCHAR} ]]> 
+			</if>
+		</where>
+	</sql>
+</mapper>
