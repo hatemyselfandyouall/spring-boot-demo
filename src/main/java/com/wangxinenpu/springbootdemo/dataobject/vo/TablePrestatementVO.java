@@ -9,11 +9,11 @@ public class TablePrestatementVO {
 
     private String tableName;
 
-    private PreparedStatement insertSQL;
+    private String insertSQL;
 
-    private PreparedStatement updateSQL;
+    private String updateSQL;
 
-    private PreparedStatement deleteSQL;
+    private String deleteSQL;
 
 
 }

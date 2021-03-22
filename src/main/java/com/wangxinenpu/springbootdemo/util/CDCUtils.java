@@ -98,4 +98,14 @@ public class CDCUtils {
                 .prepareCall(callStirng)
                 .execute();
     }
+
+    public static List<String> getCurrentFiles(Connection connection) throws SQLException {
+        List<String> files=new ArrayList<>();
+        ResultSet resultSet=connection.createStatement().executeQuery("select l.STATUS,s.MEMBER from v$log l,v$logfile s where l.GROUP# = s.GROUP# and l.STATUS='CURRENT'");
+        while (resultSet.next()){
+            files.add(resultSet.getString("MEMBER"));
+        }
+        resultSet.close();
+        return files;
+    }
 }
