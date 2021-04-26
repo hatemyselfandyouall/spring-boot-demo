@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--指定数据库配置文件的位置-->
+    <properties resource="mysql.properties"></properties>
+
+<!--    &lt;!&ndash;指定日志实现使用的是log4j&ndash;&gt;-->
+<!--    <settings>-->
+<!--        <setting name="logImpl" value="LOG4J"/>-->
+<!--    </settings>-->
+
+    <!--指定实体类-->
+    <typeAliases>
+        <typeAlias type="com.wangxinenpu.springbootdemo.dataobject.User" alias="User"/>
+    </typeAliases>
+
+    <!--指定数据库配置文件中的变量名-->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--指定映射文件的位置-->
+    <mappers>
+        <mapper resource="com/wangxinenpu/springbootdemo/dao/mapper/User.xml"/>
+    </mappers>
+    <!-- Continue going here -->
+
+</configuration>
