@@ -34,6 +34,9 @@ public class LinkTransferTaskController  {
 
     @Autowired
     DefaultMQProducer defaultMQProducer;
+
+    @Autowired
+    TableStatusCache tableStatusCache;
     static {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
@@ -283,7 +286,7 @@ public class LinkTransferTaskController  {
                  connection = DriverManager.getConnection(toUrl, props);
             }
             if (tableName.contains("?"))tableName=tableName.substring(0,tableName.length()-1);
-            TableStatusCache.setStatus(segName,tableName, type, connection);
+            tableStatusCache.setStatus(segName,tableName, type, connection);
         }catch (Exception e){
             resultVo.setResultDes("重试任务异常,原因为"+e);
             log.error("重试任务异常",e);

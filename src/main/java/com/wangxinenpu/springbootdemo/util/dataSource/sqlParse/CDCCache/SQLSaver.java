@@ -1,7 +1,9 @@
 package com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache;
 
-import com.wangxinenpu.springbootdemo.util.ExceptionWriteUtil;
+import com.wangxinenpu.springbootdemo.dao.mapper.LinkTransferTaskErrorRecordMapper;
+import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -17,8 +19,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-@Component
 @Slf4j
+@Component
 public class SQLSaver {
 //
 @Value("${spring.datasource.url}")
@@ -29,6 +31,8 @@ private String dbUrl;
     private String password;
     private Connection connection;
     private Statement statement;
+    @Autowired
+    ExceptionWriteCompoent exceptionWriteCompoent;
 
     public static final Map<String, TreeMap<Long, String>> tableCacheMap=new HashMap<>();
     public static final LinkedBlockingDeque<SaveTask> taskQueue=new LinkedBlockingDeque<>();
@@ -36,8 +40,8 @@ private String dbUrl;
     @PostConstruct
     private void init(){
         //todo initlist
-        new ThreadPoolExecutor(1, 1,
-                0L, TimeUnit.MILLISECONDS,
+         new ThreadPoolExecutor(
+                4,9,10000l, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(),
                 SoulThreadFactory.create("save-upstream-task", false))
                 .execute(new Worker());
@@ -57,7 +61,7 @@ private String dbUrl;
         }
     }
 
-    public static void  executeSQLs(String tableName, Connection connection) {
+    public  void  executeSQLs(String tableName, Connection connection) {
         TreeMap<Long, String> sqlMaps=tableCacheMap.get(tableName);
         if (CollectionUtils.isEmpty(sqlMaps)){
             return;
@@ -72,10 +76,11 @@ private String dbUrl;
             } catch (SQLException e) {
                 e.printStackTrace();
                 //todo 错误处理
-                ExceptionWriteUtil.wirte(e);
+                exceptionWriteCompoent.wirte(e);
             }
         }
     }
+
     private void execute(SaveTask saveTask) {
         String toUrl="jdbc:oracle:thin:@172.16.98.101:1521:ORCL";
         String toUserName="SYNC";
@@ -95,9 +100,9 @@ private String dbUrl;
             statement.execute(saveTask.getSql());
             log.info("增量sql数据同步成功");
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace();;
             //todo 错误处理
-            ExceptionWriteUtil.wirte(e);
+            exceptionWriteCompoent.wirte(e);
         }
 
     }

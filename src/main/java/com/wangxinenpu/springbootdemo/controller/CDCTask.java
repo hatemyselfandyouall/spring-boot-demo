@@ -81,29 +81,32 @@ public class CDCTask implements Runnable{
             ResultSet resultSet = preparedStatement.executeQuery();
             Integer count=0;
             while (resultSet.next()) {
-                String redoSQL = resultSet.getString("sql_redo");
-                if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
-                    redoSQL = redoSQL.split(";")[0];
-                }
-                String tableName = resultSet.getString("table_name");
-                String opeartion = resultSet.getString("operation");
-                String seg_owner = resultSet.getString("seg_owner");
-                String timeStamp = resultSet.getString("timestamp");
-                String scn = resultSet.getString("scn");
-                if (ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
-                    String MapTableName=seg_owner+"|"+tableName;
-                            String tableStatus=TableStatusCache.getStatus(MapTableName);
-                            //如果还没开始全量，这个表的数据不管
-                            if (org.apache.commons.lang3.StringUtils.isEmpty(tableStatus)||tableStatus.equals(MSGTYPECONSTANT.TABLE_STATUS_NOT_INITED_YET)){
+                try {
+                    String redoSQL = resultSet.getString("sql_redo");
+                    if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
+                        redoSQL = redoSQL.split(";")[0];
+                    }
+                    String tableName = resultSet.getString("table_name");
+                    String opeartion = resultSet.getString("operation");
+                    String seg_owner = resultSet.getString("seg_owner");
+                    String timeStamp = resultSet.getString("timestamp");
+                    String scn = resultSet.getString("scn");
+                    if (ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
+                        String MapTableName=seg_owner+"|"+tableName;
+                        String tableStatus=TableStatusCache.getStatus(MapTableName);
+                        //如果还没开始全量，这个表的数据不管
+                        if (org.apache.commons.lang3.StringUtils.isEmpty(tableStatus)||tableStatus.equals(MSGTYPECONSTANT.TABLE_STATUS_NOT_INITED_YET)){
 
-                            }else {
-                                //如果全量已经开始，但是尚未增量，此时进行记录但是不操作
-                                //如果全量已经结束，则按顺序入库
-                                String sql=redoSQL;
-                                Long scnLongValue=Long.valueOf(scn);
-                                SQLSaver.save(tableName,sql,tableStatus,scnLongValue);
-                            }
-
+                        }else {
+                            //如果全量已经开始，但是尚未增量，此时进行记录但是不操作
+                            //如果全量已经结束，则按顺序入库
+                            String sql=redoSQL;
+                            Long scnLongValue=Long.valueOf(scn);
+                            SQLSaver.save(tableName,sql,tableStatus,scnLongValue);
+                        }
+                    }
+                }catch (Throwable e){
+                    log.info("",e);
                 }
             }
         }catch (Exception e){
