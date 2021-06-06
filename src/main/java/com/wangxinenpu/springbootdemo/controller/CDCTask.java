@@ -1,10 +1,12 @@
 package com.wangxinenpu.springbootdemo.controller;
 
+import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskRule;
 import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.LinkTransferTaskCDDVO;
 import com.wangxinenpu.springbootdemo.util.DateUtils;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.MSGTYPECONSTANT;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SQLSaver;
+import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SqlDetailDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.TableStatusCache;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.InsertSQLParseDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SQLParseDTO;
@@ -12,32 +14,30 @@ import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SqlParseUtil;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.UpdateSQLParseDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class CDCTask implements Runnable{
 
+    private final ExceptionWriteCompoent exceptionWriteCompoent;
     private Long totalStartTime;
 
     private List<LinkTransferTaskCDDVO> linkTransferTasks;
 
     private DefaultMQProducer defaultMQProducer;
+    @Autowired
 
-    public CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer) {
+    public CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent) {
         this.totalStartTime = totalStartTime;
         this.linkTransferTasks = linkTransferTasks;
         this.defaultMQProducer = defaultMQProducer;
+        this.exceptionWriteCompoent=exceptionWriteCompoent;
     }
 
 
@@ -80,33 +80,53 @@ public class CDCTask implements Runnable{
             preparedStatement.setFetchSize(10);
             ResultSet resultSet = preparedStatement.executeQuery();
             Integer count=0;
+            String recordSql="";
+            Long recordSCN=null;
             while (resultSet.next()) {
                 try {
                     String redoSQL = resultSet.getString("sql_redo");
                     if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
-                        redoSQL = redoSQL.split(";")[0];
+                        redoSQL = redoSQL.substring(0,redoSQL.length() - 1);
                     }
                     String tableName = resultSet.getString("table_name");
                     String opeartion = resultSet.getString("operation");
                     String seg_owner = resultSet.getString("seg_owner");
                     String timeStamp = resultSet.getString("timestamp");
-                    String scn = resultSet.getString("scn");
+                    Long scn = resultSet.getLong("scn");
+                    recordSql=redoSQL;
                     if (ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
+
                         String MapTableName=seg_owner+"|"+tableName;
                         String tableStatus=TableStatusCache.getStatus(MapTableName);
                         //如果还没开始全量，这个表的数据不管
                         if (org.apache.commons.lang3.StringUtils.isEmpty(tableStatus)||tableStatus.equals(MSGTYPECONSTANT.TABLE_STATUS_NOT_INITED_YET)){
 
                         }else {
+                            //对rowid的特殊处理
+                            if (redoSQL.contains("ROWID")&&("UPDATE".equals(opeartion)||"DELETE".equals(opeartion))){
+                                redoSQL.replaceAll("and ROWID=.*","");
+                                String rowIdValue=SqlParseUtil.getRowIdFromSQL(redoSQL,opeartion);
+                                String pkName=getPK(tableName,targetConnection);
+                                Statement statement=targetConnection.createStatement();
+                                ResultSet tempResultSet=statement.executeQuery("select "+pkName+" from "+seg_owner+"."+tableName+" where ROWID= '"+rowIdValue+"'");
+                                if (tempResultSet.next()){
+                                    redoSQL=redoSQL.replaceAll("where.*","where ");
+                                    redoSQL=redoSQL+"\""+pkName+"\" = '"+tempResultSet.getString(pkName)+"'";
+                                }else {
+                                    redoSQL=redoSQL.replaceAll("and ROWID =.*","");
+                                }
+                            }
                             //如果全量已经开始，但是尚未增量，此时进行记录但是不操作
                             //如果全量已经结束，则按顺序入库
                             String sql=redoSQL;
+                            recordSCN=Long.valueOf(scn);
                             Long scnLongValue=Long.valueOf(scn);
                             SQLSaver.save(tableName,sql,tableStatus,scnLongValue);
                         }
                     }
                 }catch (Throwable e){
                     log.info("",e);
+                    exceptionWriteCompoent.wirte(recordSql,e,recordSCN);
                 }
             }
         }catch (Exception e){
@@ -132,26 +152,42 @@ public class CDCTask implements Runnable{
         try {
             Map<String,List<LinkTransferTaskRule>> listMap=linkTransferTaskRules.stream().collect(Collectors.groupingBy(i->i.getColumnName().toUpperCase()));
             opeartion=opeartion.toLowerCase();
-            switch (opeartion){
-                case "insert":
-                    InsertSQLParseDTO insertSQLParseDTO= SqlParseUtil.test_insert(redoSQL);
-                    return  checkSQLRule(insertSQLParseDTO,listMap);
-                case "update":
-                    UpdateSQLParseDTO updateSQLParseDTO=SqlParseUtil.test_update(redoSQL);
-                    UpdateSQLParseDTO updoParse=SqlParseUtil.test_update(sqlUndo);
-                    return  checkSQLRule(updateSQLParseDTO,listMap)||checkSQLRule(updoParse,listMap);
-                case "delete":
-                    insertSQLParseDTO=SqlParseUtil.test_insert(sqlUndo);
-                    return  checkSQLRule(insertSQLParseDTO,listMap);
-                default:
-                    return false;
+            List<SQLParseDTO> sqlParseDTOS=parseSQL(opeartion,redoSQL,sqlUndo);
+            if (!CollectionUtils.isEmpty(sqlParseDTOS)){
+                for (SQLParseDTO sqlParseDTO:sqlParseDTOS){
+                    if (!checkSQLRule(sqlParseDTO,listMap)){
+                        return false;
+                    }
+                }
             }
+            return true;
         }catch (Exception e){
             return true;
         }
 
     }
 
+    private static List<SQLParseDTO> parseSQL(String opeartion,String redoSQL,String sqlUndo) throws Exception{
+        List<SQLParseDTO>sqlDetailDTOS=new ArrayList<>();
+        switch (opeartion) {
+            case "insert":
+                InsertSQLParseDTO insertSQLParseDTO = SqlParseUtil.test_insert(redoSQL);
+                sqlDetailDTOS.add(insertSQLParseDTO);
+                break;
+            case "update":
+                UpdateSQLParseDTO updateSQLParseDTO = SqlParseUtil.test_update(redoSQL);
+                UpdateSQLParseDTO updoParse = SqlParseUtil.test_update(sqlUndo);
+                sqlDetailDTOS.add(updateSQLParseDTO);
+                sqlDetailDTOS.add(updoParse);
+                break;
+            case "delete":
+                updateSQLParseDTO = SqlParseUtil.test_update(redoSQL);
+                insertSQLParseDTO = SqlParseUtil.test_insert(sqlUndo);
+                sqlDetailDTOS.add(insertSQLParseDTO);
+                sqlDetailDTOS.add(updateSQLParseDTO);
+        }
+        return sqlDetailDTOS;
+    }
     private static boolean checkSQLRule(SQLParseDTO insertSQLParseDTO, Map<String,List<LinkTransferTaskRule>> listMap){
         for (int i=0;i<insertSQLParseDTO.getColumns().size();i++){
             String column=insertSQLParseDTO.getColumns().get(i).toUpperCase();
@@ -177,5 +213,18 @@ public class CDCTask implements Runnable{
             }
         }
         return true;
+    }
+    public static  String getPK(String tableName,Connection connection) {
+        String PKName = null;
+        try {
+            DatabaseMetaData dmd = connection.getMetaData();
+            ResultSet rs = dmd.getPrimaryKeys(null, "%", tableName);
+            rs.next();
+            PKName = rs.getString("column_name");
+            rs.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return PKName;
     }
 }

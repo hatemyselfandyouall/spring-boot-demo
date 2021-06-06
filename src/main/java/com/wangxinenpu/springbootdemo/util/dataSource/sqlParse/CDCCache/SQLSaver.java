@@ -67,24 +67,28 @@ private String dbUrl;
             return;
         }else {
             Iterator<Map.Entry<Long, String>> it=sqlMaps.entrySet().iterator();//新建一个迭代器，准备遍历整个Set<Map.EntrySet<String,String>>集合；
+            String recordSql="";
+            Long recordSCN=null;
             try (Statement statement=connection.createStatement()){
                 while(it.hasNext()){
                     Map.Entry<Long, String> en=it.next();//
-                    statement.execute(en.getValue());
+                    recordSql=en.getValue();
+                    recordSCN=en.getKey();
+                    statement.execute(recordSql);
                     //todo 数据入库
             }
             } catch (SQLException e) {
                 e.printStackTrace();
                 //todo 错误处理
-                exceptionWriteCompoent.wirte(e);
+                exceptionWriteCompoent.wirte(recordSql,e,recordSCN);
             }
         }
     }
 
     private void execute(SaveTask saveTask) {
-        String toUrl="jdbc:oracle:thin:@172.16.98.101:1521:ORCL";
-        String toUserName="SYNC";
-        String toPassWord="SYNC";
+        String toUrl="";
+        String toUserName="";
+        String toPassWord="";
         Properties props = new Properties() ;
         props.put( "user" , toUserName) ;
         props.put( "password" , toPassWord) ;
@@ -97,12 +101,12 @@ private String dbUrl;
                 statement= connection.createStatement();
             }
             log.info("监听到增量sql数据，进行同步");
-            statement.execute(saveTask.getSql());
+            statement. execute(saveTask.getSql());
             log.info("增量sql数据同步成功");
         } catch (SQLException e) {
             e.printStackTrace();;
             //todo 错误处理
-            exceptionWriteCompoent.wirte(e);
+            exceptionWriteCompoent.wirte(saveTask.getSql(),e,saveTask.getScn());
         }
 
     }

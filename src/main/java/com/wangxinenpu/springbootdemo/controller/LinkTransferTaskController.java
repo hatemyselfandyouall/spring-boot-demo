@@ -1,6 +1,7 @@
 package com.wangxinenpu.springbootdemo.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTask;
 import com.wangxinenpu.springbootdemo.dataobject.vo.DataListResultDto;
 import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.*;
@@ -37,6 +38,9 @@ public class LinkTransferTaskController  {
 
     @Autowired
     TableStatusCache tableStatusCache;
+
+    @Autowired
+    ExceptionWriteCompoent exceptionWriteCompoent;
     static {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
@@ -252,15 +256,31 @@ public class LinkTransferTaskController  {
             }else {
                 isWorking=true;
                 List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-                CDCTask cdcTask=new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer);
+                CDCTask cdcTask=new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent);
                 Thread thread=new Thread(cdcTask);
                 thread.start();
             }
             //获取需要监听的表列表
-
             //根据列表进行数据增量入mq的工作
+        }catch (Exception e){
+            resultVo.setResultDes("重试任务异常,原因为"+e);
+            log.error("重试任务异常",e);
+        }
+        return resultVo;
+    }
 
-
+    @ApiOperation(value = "startAllFullCDC")
+    @RequestMapping(value = "/startAllFullCDC",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
+        public ResultVo<LinkTransferTask>startAllFullCDC(){
+        ResultVo resultVo=new ResultVo();
+        try {
+            List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
+            for (LinkTransferTaskCDDVO linkTransferTaskCDDVO:linkTransferTasks) {
+                tableStatusCache.setStatus(linkTransferTaskCDDVO.getSegName(),
+                        linkTransferTaskCDDVO.getTargetTablesString(),
+                        "3", connection);
+            }
+            startCdc(System.currentTimeMillis());
         }catch (Exception e){
             resultVo.setResultDes("重试任务异常,原因为"+e);
             log.error("重试任务异常",e);
@@ -270,7 +290,7 @@ public class LinkTransferTaskController  {
 
     @ApiOperation(value = "startTableCDC")
     @RequestMapping(value = "/startTableCDC",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-        public ResultVo<LinkTransferTask>startTableCDC(@RequestParam("type")String type,@RequestParam("segName") String segName,@RequestParam("tableName")String tableName){
+    public ResultVo<LinkTransferTask> startTableCDC(@RequestParam("type")String type,@RequestParam("segName") String segName,@RequestParam("tableName")String tableName){
         ResultVo resultVo=new ResultVo();
         try {
             //获取需要监听的表列表
@@ -283,7 +303,7 @@ public class LinkTransferTaskController  {
                 props.put("user", toUserName);
                 props.put("password", toPassWord);
                 props.put("oracle.net.CONNECT_TIMEOUT", "10000000");
-                 connection = DriverManager.getConnection(toUrl, props);
+                connection = DriverManager.getConnection(toUrl, props);
             }
             if (tableName.contains("?"))tableName=tableName.substring(0,tableName.length()-1);
             tableStatusCache.setStatus(segName,tableName, type, connection);
@@ -309,7 +329,6 @@ public class LinkTransferTaskController  {
             log.info(TableStatusCache.statusMap+"");
             log.info(SQLSaver.taskQueue+"");
             log.info(SQLSaver.tableCacheMap+"");
-//            String
         }catch (Exception e){
             resultVo.setResultDes("重试任务异常,原因为"+e);
             log.error("重试任务异常",e);
@@ -333,15 +352,16 @@ public class LinkTransferTaskController  {
 //        while (resultset.next()) {
 //            System.out.println(resultset.getString("count(*)"));
 //        }
-        Class.forName("oracle.jdbc.OracleDriver");
-        String toUrl = "jdbc:oracle:thin:@172.16.98.101:1521:ORCL";
-        String toUserName = "SYNC";
-        String toPassWord = "SYNC";
-        Properties props = new Properties();
-        props.put("user", toUserName);
-        props.put("password", toPassWord);
-        props.put("oracle.net.CONNECT_TIMEOUT", "10000000");
-       Connection connection = DriverManager.getConnection(toUrl, props);
+//        Class.forName("oracle.jdbc.OracleDriver");
+//        String toUrl = "jdbc:oracle:thin:@172.16.98.101:1521:ORCL";
+//        String toUserName = "SYNC";
+//        String toPassWord = "SYNC";
+//        Properties props = new Properties();
+//        props.put("user", toUserName);
+//        props.put("password", toPassWord);
+//        props.put("oracle.net.CONNECT_TIMEOUT", "10000000");
+//       Connection connection = DriverManager.getConnection(toUrl, props);
+        System.out.println(System.currentTimeMillis()+"");
     }
 
 }

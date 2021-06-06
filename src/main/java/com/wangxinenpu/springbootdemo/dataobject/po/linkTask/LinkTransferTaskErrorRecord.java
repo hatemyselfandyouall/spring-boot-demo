@@ -27,8 +27,8 @@ public class LinkTransferTaskErrorRecord implements Serializable{
     private Long id;
 
     @ApiModelProperty("")
-    @Column( name="sql")
-    private String sql;
+    @Column( name="save_sql")
+    private String saveSql;
 
     @ApiModelProperty("")
     @Column( name="exception_trace")
@@ -42,6 +42,9 @@ public class LinkTransferTaskErrorRecord implements Serializable{
     @Column( name="create_time")
     private Date createTime;
 
+    @ApiModelProperty("")
+    @Column( name="scn")
+    private Long scn;
 
 
 

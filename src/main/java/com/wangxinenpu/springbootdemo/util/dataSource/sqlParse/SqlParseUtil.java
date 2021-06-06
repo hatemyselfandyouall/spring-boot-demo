@@ -7,10 +7,12 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import org.apache.ibatis.annotations.DeleteProvider;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -23,8 +25,12 @@ public class SqlParseUtil {
     //由已知的 sql语句 分别得到对应的 List<String> 或 String
 
     public static void main(String[] args) throws JSQLParserException {
-        InsertSQLParseDTO insertSQLParseDTO=test_insert("INSERT INTO AC84 VALUES ('zhc', 'ssdf', '111');");
-        System.out.println(insertSQLParseDTO);
+        String deleteTest="delete from \"EMPQUERY\".\"AC20\" where \"AAZ157\" = '3010000007109499' and \"AAZ159\" = '3010000006944720' and \"AAA027\" = '330100' and \"AAB301\" = '330108' and \"AAE140\" = '210' and \"AAC001\" = '3010001071908729' and \"AAB001\" = '3011000106267879' and \"AAB033\" = '2' and \"AAC013\" IS NULL and \"AAC031\" = '2' and \"AAC066\" = '100' and \"AAC040\" = '3500' and \"AAE180\" = '3500' and \"AAE030\" = '20200401' and \"AAE031\" = '20210601' and \"AAZ165\" IS NULL and \"AAZ289\" = '33010021010607' and \"AAZ113\" IS NULL and \"AAZ003\" IS NULL and \"AJC050\" = '20160801' and \"PRSENO\" = '3010000036247517' and \"CREATE_TIME\" = TO_DATE('01-4月 -20', 'DD-MON-RR') and \"MODIFY_TIME\" = TO_DATE('04-6月 -21', 'DD-MON-RR') and \"ACA111\" IS NULL and ROWID = 'AAAedQAGuAAAvVvAAi'";
+//        System.out.println(deleteTest);
+//        String updateTest="update \"EMPQUERY\".\"AC02\" set \"AAZ159\" = '4000000010795644', \"AAA027\" = '330122', \"AAE140\" = '110', \"AAC001\" = '4000000010516123', \"AAC008\" = '1', \"AAC049\" = '202104', \"AAE030\" = '20210401', \"AAE031\" = NULL, \"AAE200\" = NULL, \"AAE206\" = NULL, \"AAZ165\" = '40717737', \"AAE100\" = '1', \"PRSENO\" = '163999899937377013', \"CREATE_TIME\" = TO_DATE('20-4月 -21', 'DD-MON-RR'), \"MODIFY_TIME\" = TO_DATE('04-6月 -21', 'DD-MON-RR') where \"AAZ159\" = '4000000010795644' and \"AAA027\" = '330122' and \"AAE140\" = '110' and \"AAC001\" = '4000000010516123' and \"AAC008\" = '1' and \"AAC049\" = '202104' and \"AAE030\" = '20210401' and \"AAE031\" IS NULL and \"AAE200\" IS NULL and \"AAE206\" IS NULL and \"AAZ165\" = '40717737' and \"AAE100\" = '1' and \"PRSENO\" = '163999899937377013' and \"CREATE_TIME\" = TO_DATE('20-4月 -21', 'DD-MON-RR') and \"MODIFY_TIME\" = TO_DATE('20-4月 -21', 'DD-MON-RR') and ROWID = 'AAAehtAGxAAA8AcAAn'";
+//        UpdateSQLParseDTO updateSQLParseDTO=test_update(updateTest);
+        System.out.println(deleteTest.replaceAll("and ROWID =.*",""));
+//        System.out.println(updateSQLParseDTO);
     }
 
     public static void test_select(String sql) throws JSQLParserException {
@@ -75,7 +81,23 @@ public class SqlParseUtil {
         UpdateSQLParseDTO insertSQLParseDTO=new UpdateSQLParseDTO();
         insertSQLParseDTO.setColumns(str_column);
         insertSQLParseDTO.setValues(str_values);
+        insertSQLParseDTO.setWhere(str_where);
         return insertSQLParseDTO;
+    }
+
+    public static DeleteSQLParseDTO test_delete(String sql) throws JSQLParserException {
+
+        // *********update table name
+//        List<String> str_table = test_update_table(sql);
+        // *********update column
+        String str_column = test_delete_column(sql);
+        // *********update values
+        // *******uodate where
+//        String str_where = test_update_where(sql);
+        DeleteSQLParseDTO deleteSQLParseDTO=new DeleteSQLParseDTO();
+//        insertSQLParseDTO.setColumns(str_column);
+        deleteSQLParseDTO.setWhere(str_column);
+        return deleteSQLParseDTO;
     }
 
     // *********select body items内容
@@ -222,6 +244,25 @@ public class SqlParseUtil {
     }
 
     // *********update column
+    public static String test_delete_column(String sql)
+            throws JSQLParserException {
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Delete updateStatement = (Delete) statement;
+        String str = updateStatement.getWhere().toString();
+//        return str;
+//        List<String> str_column = new ArrayList<String>();
+//        if (update_column != null) {
+//            for (int i = 0; i < update_column.size(); i++) {
+//                str_column.add(update_column.get(i).toString().replaceAll("\"","").replaceAll("'",""));
+//            }
+//
+//        }
+        System.out.println(str);
+        return str;
+
+    }
+
+    // *********update column
     public static List<String> test_update_column(String sql)
             throws JSQLParserException {
         Statement statement = CCJSqlParserUtil.parse(sql);
@@ -328,4 +369,24 @@ public class SqlParseUtil {
         }
     }
 
+    public static String getROWIDfromWhere(String where){
+//        if (!where.contains(column)){
+//            return null;
+//        }
+        where=where.substring(where.indexOf("AND ROWID = '"));
+        where=where.replace("AND ROWID = '","").replaceAll("'","");
+        return where;
+    }
+
+    public static String getRowIdFromSQL(String redoSQL, String opeartion) throws JSQLParserException {
+        if ("UPDATE".equals(opeartion)){
+            SQLParseDTO sqlParseDTO=test_update(redoSQL);
+            return getROWIDfromWhere(sqlParseDTO.getWhere());
+        }
+        if ("DELETE".equals(opeartion)){
+            SQLParseDTO sqlParseDTO=test_delete(redoSQL);
+            return getROWIDfromWhere(sqlParseDTO.getWhere());
+        }
+        return null;
+    }
 }

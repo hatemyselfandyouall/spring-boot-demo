@@ -11,4 +11,6 @@ public class SQLParseDTO {
     private List<String> columns;
 
     private List<String> values;
+
+    private String where;
 }

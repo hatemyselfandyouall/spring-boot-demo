@@ -7,12 +7,7 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-public class DeleteSQLParseDTO {
+public class DeleteSQLParseDTO extends SQLParseDTO{
 
-    private String tableName;
-
-    private List<String> columns;
-
-    private List<String> values;
 
 }
