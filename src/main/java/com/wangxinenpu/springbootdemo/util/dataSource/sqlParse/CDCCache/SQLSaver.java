@@ -23,12 +23,13 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class SQLSaver {
 //
-@Value("${spring.datasource.url}")
-private String dbUrl;
-    @Value("${spring.datasource.username}")
-    private String username;
-    @Value("${spring.datasource.password}")
-    private String password;
+    @Value("${cdc.to.linkurl}")
+    private String toLinkUrl;
+    @Value("${cdc.to.username}")
+    private String cdctousername;
+    @Value("${cdc.to.password}")
+    private String cdctopassword;
+
     private Connection connection;
     private Statement statement;
     @Autowired
@@ -86,9 +87,9 @@ private String dbUrl;
     }
 
     private void execute(SaveTask saveTask) {
-        String toUrl="";
-        String toUserName="";
-        String toPassWord="";
+        String toUrl=toLinkUrl;
+        String toUserName=cdctousername;
+        String toPassWord=cdctopassword;
         Properties props = new Properties() ;
         props.put( "user" , toUserName) ;
         props.put( "password" , toPassWord) ;

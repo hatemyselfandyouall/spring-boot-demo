@@ -15,9 +15,11 @@ import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.UpdateSQLParseDTO
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,13 +33,19 @@ public class CDCTask implements Runnable{
     private List<LinkTransferTaskCDDVO> linkTransferTasks;
 
     private DefaultMQProducer defaultMQProducer;
-    @Autowired
 
-    public CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent) {
+    private String fromLinkUrl;
+    private String cdcfromusername;
+    private String cdcfrompassword;
+
+    public CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl, String cdcfromusername, String cdcfrompassword) {
         this.totalStartTime = totalStartTime;
         this.linkTransferTasks = linkTransferTasks;
         this.defaultMQProducer = defaultMQProducer;
         this.exceptionWriteCompoent=exceptionWriteCompoent;
+        this.fromLinkUrl=fromLinkUrl;
+        this.cdcfromusername=cdcfromusername;
+        this.cdcfrompassword=cdcfrompassword;
     }
 
 
@@ -46,9 +54,9 @@ public class CDCTask implements Runnable{
         try {
             Class.forName("oracle.jdbc.OracleDriver");
             String startString= DateUtils.parseLongtoDate(totalStartTime,"yyyy-MM-dd HH:mm:ss");
-            String connectUrl="jdbc:oracle:thin:@//172.16.81.11:1521/hzrsrac";
-            String targetUserName="sjhl_fy";
-            String targetPassword="sjhl_pwdfy21";
+            String connectUrl=fromLinkUrl;
+            String targetUserName=cdcfromusername;
+            String targetPassword=cdcfrompassword;
             Connection targetConnection = DriverManager.getConnection(connectUrl, targetUserName, targetPassword);
             targetConnection.createStatement().execute("BEGIN dbms_logmnr.start_logmnr(STARTTIME =>to_date('"+startString+"' , 'yyyy-mm-dd hh24:mi:ss'),options => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG + DBMS_LOGMNR.CONTINUOUS_MINE + DBMS_LOGMNR.COMMITTED_DATA_ONLY);END;");
 //            PreparedStatement preparedStatement=targetConnection.prepareStatement("SELECT * FROM v$logmnr_contents where  seg_owner = 'SYNC' and table_name" +

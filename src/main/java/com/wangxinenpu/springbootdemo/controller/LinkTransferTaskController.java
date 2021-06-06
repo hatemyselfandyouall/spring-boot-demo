@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Connection;
@@ -41,6 +42,18 @@ public class LinkTransferTaskController  {
 
     @Autowired
     ExceptionWriteCompoent exceptionWriteCompoent;
+    @Value("${cdc.to.linkurl}")
+    private String toLinkUrl;
+    @Value("${cdc.to.username}")
+    private String cdctousername;
+    @Value("${cdc.to.password}")
+    private String cdctopassword;
+    @Value("${cdc.from.linkurl}")
+    private String fromLinkUrl;
+    @Value("${cdc.from.username}")
+    private String cdcfromusername;
+    @Value("${cdc.from.password}")
+    private String cdcfrompassword;
     static {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
@@ -256,7 +269,7 @@ public class LinkTransferTaskController  {
             }else {
                 isWorking=true;
                 List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-                CDCTask cdcTask=new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent);
+                CDCTask cdcTask=new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
                 Thread thread=new Thread(cdcTask);
                 thread.start();
             }
@@ -296,9 +309,9 @@ public class LinkTransferTaskController  {
             //获取需要监听的表列表
             if (connection==null||connection.isClosed()) {
                 Class.forName("oracle.jdbc.OracleDriver");
-                String toUrl = "jdbc:oracle:thin:@172.16.98.101:1521:ORCL";
-                String toUserName = "SYNC";
-                String toPassWord = "SYNC";
+                String toUrl = toLinkUrl;
+                String toUserName = cdctopassword;
+                String toPassWord =toUserName;
                 Properties props = new Properties();
                 props.put("user", toUserName);
                 props.put("password", toPassWord);
