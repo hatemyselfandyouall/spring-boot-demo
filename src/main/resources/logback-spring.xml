@@ -40,7 +40,7 @@
     <logger name="com.alibaba.dubbo" level="info"/>
     <logger name="com.dabay.oms.dao" level="error"/>
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </root>

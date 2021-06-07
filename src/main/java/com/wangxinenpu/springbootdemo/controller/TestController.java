@@ -1,6 +1,7 @@
 package com.wangxinenpu.springbootdemo.controller;
 
 import com.wangxinenpu.springbootdemo.dataobject.User;
+import com.wangxinenpu.springbootdemo.redismq.MessagePublisher;
 import com.wangxinenpu.springbootdemo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
@@ -25,12 +27,21 @@ public class TestController {
     @Autowired
     RedisTemplate redisTemplate;
 
+    @Resource
+    private MessagePublisher messagePublisher;
+
+
 
     @RequestMapping("hello")
     public String hello(){
-        log.info("hello redis");
-        redisTemplate.opsForValue().set("hello","world");
-        return redisTemplate.opsForValue().get("hello")+"";
+        log.info("hello log");
+        for(int i = 0;i<1000;i++){
+            messagePublisher.publish("hello,world"+i);
+
+        }
+
+
+        return "hello Spring";
     }
 
     @RequestMapping(value = "mybtaisTest",method = RequestMethod.GET)

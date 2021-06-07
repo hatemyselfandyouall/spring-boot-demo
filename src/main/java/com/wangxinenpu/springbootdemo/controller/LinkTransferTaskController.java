@@ -28,15 +28,13 @@ import java.util.Properties;
 
 @RestController
 @RequestMapping("linkTransferTask")
-@Api(tags ="数据源抽取管理")
+@Api(tags = "数据源抽取管理")
 @Slf4j
-public class LinkTransferTaskController  {
+public class LinkTransferTaskController {
 
     @Autowired
     LinkTransferTaskFacade linkTransferTaskFacade;
 
-    @Autowired
-    DefaultMQProducer defaultMQProducer;
 
     @Autowired
     TableStatusCache tableStatusCache;
@@ -58,6 +56,7 @@ public class LinkTransferTaskController  {
     private String cdcfromusername;
     @Value("${cdc.from.password}")
     private String cdcfrompassword;
+
     static {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
@@ -65,73 +64,75 @@ public class LinkTransferTaskController  {
             e.printStackTrace();
         }
     }
-    private Connection connection=null;
 
-    private static  Boolean isWorking=false;
+    private Connection connection = null;
+
+    private static Boolean isWorking = false;
+
     @ApiOperation(value = "数据源抽取列表")
-    @RequestMapping(value = "/list",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTaskShowVO> getLinkTransferTaskList(@RequestBody LinkTransferTaskListVO linkTransferTaskListVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/list", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTaskShowVO> getLinkTransferTaskList(@RequestBody LinkTransferTaskListVO linkTransferTaskListVO) {
+        ResultVo resultVo = new ResultVo();
         try {
-            PageInfo<LinkTransferTaskShowVO> linkTransferTaskList=linkTransferTaskFacade.getLinkTransferTaskList(linkTransferTaskListVO);
-            if(linkTransferTaskList!=null){
-                DataListResultDto<LinkTransferTaskShowVO> dataListResultDto=new DataListResultDto<>(linkTransferTaskList.getList(),(int)linkTransferTaskList.getTotal());
+            PageInfo<LinkTransferTaskShowVO> linkTransferTaskList = linkTransferTaskFacade.getLinkTransferTaskList(linkTransferTaskListVO);
+            if (linkTransferTaskList != null) {
+                DataListResultDto<LinkTransferTaskShowVO> dataListResultDto = new DataListResultDto<>(linkTransferTaskList.getList(), (int) linkTransferTaskList.getTotal());
                 resultVo.setResult(dataListResultDto);
                 resultVo.setSuccess(true);
-            }else {
+            } else {
                 resultVo.setResultDes("分页数据缺失");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             resultVo.setResultDes("获取数据源抽取列表异常");
-            log.error("获取数据源抽取列表异常",e);
+            log.error("获取数据源抽取列表异常", e);
         }
         return resultVo;
     }
 
     @ApiOperation(value = "数据源抽取详情")
-    @RequestMapping(value = "/detail",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask> getLinkTransferTaskDetail(@RequestBody LinkTransferTaskDetailVO linkTransferTaskDetailVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/detail", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> getLinkTransferTaskDetail(@RequestBody LinkTransferTaskDetailVO linkTransferTaskDetailVO) {
+        ResultVo resultVo = new ResultVo();
         try {
-        LinkTransferTask linkTransferTask=linkTransferTaskFacade.getLinkTransferTaskDetail(linkTransferTaskDetailVO);
-        if(linkTransferTask!=null){
-            resultVo.setResult(linkTransferTask);
-            resultVo.setSuccess(true);
-        }else {
-            resultVo.setResultDes("获取详情失败");
+            LinkTransferTask linkTransferTask = linkTransferTaskFacade.getLinkTransferTaskDetail(linkTransferTaskDetailVO);
+            if (linkTransferTask != null) {
+                resultVo.setResult(linkTransferTask);
+                resultVo.setSuccess(true);
+            } else {
+                resultVo.setResultDes("获取详情失败");
+            }
+        } catch (Exception e) {
+            resultVo.setResultDes("获取数据源抽取详情异常");
+            log.error("获取数据源抽取详情异常", e);
         }
-        } catch (Exception e){
-        resultVo.setResultDes("获取数据源抽取详情异常");
-        log.error("获取数据源抽取详情异常",e);
-    }
         return resultVo;
     }
 
     @ApiOperation(value = "数据源抽取保存")
-    @RequestMapping(value = "/save",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask> saveLinkTransferTask(@RequestBody LinkTransferTaskSaveVO linkTransferTaskSaveVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/save", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> saveLinkTransferTask(@RequestBody LinkTransferTaskSaveVO linkTransferTaskSaveVO) {
+        ResultVo resultVo = new ResultVo();
         try {
-            Long userId=2l;
-            String userName="Test";
-            Integer flag = linkTransferTaskFacade.saveLinkTransferTask(linkTransferTaskSaveVO,userId,userName);
+            Long userId = 2l;
+            String userName = "Test";
+            Integer flag = linkTransferTaskFacade.saveLinkTransferTask(linkTransferTaskSaveVO, userId, userName);
             if (1 == flag) {
                 resultVo.setResultDes("数据源抽取保存成功");
                 resultVo.setSuccess(true);
             } else {
                 resultVo.setResultDes("数据源抽取保存失败");
             }
-        }catch (Exception e){
-                resultVo.setResultDes("接口保存异常"+e.getMessage());
-                log.error("数据源抽取保存异常",e);
-            }
+        } catch (Exception e) {
+            resultVo.setResultDes("接口保存异常" + e.getMessage());
+            log.error("数据源抽取保存异常", e);
+        }
         return resultVo;
     }
 
     @ApiOperation(value = "数据源抽取删除")
-    @RequestMapping(value = "/delete",method = RequestMethod.DELETE,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask> deleteLinkTransferTask(@RequestBody LinkTransferTaskDeleteVO linkTransferTaskDeleteVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/delete", method = RequestMethod.DELETE, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> deleteLinkTransferTask(@RequestBody LinkTransferTaskDeleteVO linkTransferTaskDeleteVO) {
+        ResultVo resultVo = new ResultVo();
         try {
             Integer flag = linkTransferTaskFacade.deleteLinkTransferTask(linkTransferTaskDeleteVO);
             if (1 == flag) {
@@ -140,18 +141,18 @@ public class LinkTransferTaskController  {
             } else {
                 resultVo.setResultDes("数据源抽取删除失败");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             resultVo.setResultDes("数据源抽取删除异常");
-            log.error("数据源抽取删除异常",e);
+            log.error("数据源抽取删除异常", e);
         }
         return resultVo;
     }
 
 
     @ApiOperation(value = "设置抽取任务状态")
-    @RequestMapping(value = "/setStatus",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public synchronized ResultVo<LinkTransferTask>setStatusLinkTransferTask(@RequestBody LinkTransferTaskSetStatusVO linkTransferTaskSetStatusVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/setStatus", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    public synchronized ResultVo<LinkTransferTask> setStatusLinkTransferTask(@RequestBody LinkTransferTaskSetStatusVO linkTransferTaskSetStatusVO) {
+        ResultVo resultVo = new ResultVo();
         try {
             Integer flag = linkTransferTaskFacade.setStatusLinkTransferTask(linkTransferTaskSetStatusVO);
             if (1 == flag) {
@@ -160,68 +161,68 @@ public class LinkTransferTaskController  {
             } else {
                 resultVo.setResultDes("设置抽取任务状态删除失败");
             }
-        }catch (Exception e){
-            resultVo.setResultDes("设置抽取任务状态删除异常,异常为"+e.getMessage());
-            log.error("设置抽取任务状态删除异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("设置抽取任务状态删除异常,异常为" + e.getMessage());
+            log.error("设置抽取任务状态删除异常", e);
         }
         return resultVo;
     }
 
     @ApiOperation(value = "手动启动任务")
-    @RequestMapping(value = "/manualStart",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>manualStart(@RequestBody LinkTransferTaskManualStartVO linkTransferTaskManualStartVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/manualStart", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> manualStart(@RequestBody LinkTransferTaskManualStartVO linkTransferTaskManualStartVO) {
+        ResultVo resultVo = new ResultVo();
         try {
-            String userName="2";
-            Integer flag = linkTransferTaskFacade.manualStart(linkTransferTaskManualStartVO,userName);
+            String userName = "2";
+            Integer flag = linkTransferTaskFacade.manualStart(linkTransferTaskManualStartVO, userName);
             if (1 == flag) {
                 resultVo.setResultDes("手动启动任务成功,任务开始在后台执行");
                 resultVo.setSuccess(true);
             } else {
                 resultVo.setResultDes("手动启动任务失败");
             }
-        }catch (Exception e){
-            resultVo.setResultDes("手动启动任务异常,异常为"+e.getMessage());
-            log.error("手动启动任务异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("手动启动任务异常,异常为" + e.getMessage());
+            log.error("手动启动任务异常", e);
         }
         return resultVo;
     }
 
     @ApiOperation(value = "任务停用")
-    @RequestMapping(value = "/taskStop",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>taskStop(@RequestBody LinkTransferTaskManualStartVO linkTransferTaskManualStartVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/taskStop", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> taskStop(@RequestBody LinkTransferTaskManualStartVO linkTransferTaskManualStartVO) {
+        ResultVo resultVo = new ResultVo();
         try {
 //            Integer flag = linkTransferTaskFacade.taskStop(linkTransferTaskManualStartVO);
 //            if (1 == flag) {
-                resultVo.setResultDes("暂时不支持停止任务");
-                resultVo.setSuccess(true);
+            resultVo.setResultDes("暂时不支持停止任务");
+            resultVo.setSuccess(true);
 //            } else {
 //                resultVo.setResultDes("停止任务失败");
 //            }
-        }catch (Exception e){
-            resultVo.setResultDes("停止任务异常,异常为"+e.getMessage());
-            log.error("停止任务异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("停止任务异常,异常为" + e.getMessage());
+            log.error("停止任务异常", e);
         }
         return resultVo;
     }
 
     @ApiOperation(value = "任务重试")
-    @RequestMapping(value = "/taskRetry",method = RequestMethod.POST,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>taskRetry(@RequestBody LinkTransferTaskManualStartVO linkTransferTaskManualStartVO){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/taskRetry", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> taskRetry(@RequestBody LinkTransferTaskManualStartVO linkTransferTaskManualStartVO) {
+        ResultVo resultVo = new ResultVo();
         try {
-            String userName="12";
-            Integer flag = linkTransferTaskFacade.taskRetry(linkTransferTaskManualStartVO,userName);
+            String userName = "12";
+            Integer flag = linkTransferTaskFacade.taskRetry(linkTransferTaskManualStartVO, userName);
             if (1 == flag) {
                 resultVo.setResultDes("重试任务成功");
                 resultVo.setSuccess(true);
             } else {
                 resultVo.setResultDes("重试任务失败");
             }
-        }catch (Exception e){
-            resultVo.setResultDes("重试任务异常,原因为"+e);
-            log.error("重试任务异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("重试任务异常,原因为" + e);
+            log.error("重试任务异常", e);
         }
         return resultVo;
     }
@@ -264,130 +265,130 @@ public class LinkTransferTaskController  {
 //    }
 
     @ApiOperation(value = "startCdc")
-    @RequestMapping(value = "/startCdc",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>startCdc(@RequestParam("totalStartTime") Long totalStartTime){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/startCdc", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> startCdc(@RequestParam("totalStartTime") Long totalStartTime) {
+        ResultVo resultVo = new ResultVo();
         try {
-            if (isWorking){
+            if (isWorking) {
                 return resultVo;
-            }else {
-                isWorking=true;
-                List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,null);
-                Thread thread=new Thread(cdcTask);
+            } else {
+                isWorking = true;
+                List<LinkTransferTaskCDDVO> linkTransferTasks = linkTransferTaskFacade.startCdc();
+                cdcTask = CDCTask.getInstance(totalStartTime, linkTransferTasks, exceptionWriteCompoent, fromLinkUrl, cdcfromusername, cdcfrompassword, null);
+                Thread thread = new Thread(cdcTask);
                 thread.start();
             }
             //获取需要监听的表列表
             //根据列表进行数据增量入mq的工作
-        }catch (Exception e){
-            resultVo.setResultDes("重试任务异常,原因为"+e);
-            log.error("重试任务异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("重试任务异常,原因为" + e);
+            log.error("重试任务异常", e);
         }
         return resultVo;
     }
 
     @ApiOperation(value = "重建连接")
-    @RequestMapping(value = "/cdcTaskReinit",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>cdcTaskReinit(@RequestParam("totalStartTime") Long totalStartTime){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/cdcTaskReinit", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> cdcTaskReinit(@RequestParam("totalStartTime") Long totalStartTime) {
+        ResultVo resultVo = new ResultVo();
         try {
-            List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,null);
-            Thread thread=new Thread(cdcTask);
+            List<LinkTransferTaskCDDVO> linkTransferTasks = linkTransferTaskFacade.startCdc();
+            cdcTask = CDCTask.getInstance(totalStartTime, linkTransferTasks, exceptionWriteCompoent, fromLinkUrl, cdcfromusername, cdcfrompassword, null);
+            Thread thread = new Thread(cdcTask);
             thread.start();
             //获取需要监听的表列表
             //根据列表进行数据增量入mq的工作
-        }catch (Exception e){
-            resultVo.setResultDes("重试任务异常,原因为"+e);
-            log.error("重试任务异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("重试任务异常,原因为" + e);
+            log.error("重试任务异常", e);
         }
         return resultVo;
     }
 
     @ApiOperation(value = "startAllFullCDC")
-    @RequestMapping(value = "/startAllFullCDC",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-        public ResultVo<LinkTransferTask>startAllFullCDC(@RequestParam(value = "status",required = false,defaultValue = "3") String status){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/startAllFullCDC", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> startAllFullCDC(@RequestParam(value = "status", required = false, defaultValue = "3") String status) {
+        ResultVo resultVo = new ResultVo();
         try {
-            List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-            for (LinkTransferTaskCDDVO linkTransferTaskCDDVO:linkTransferTasks) {
+            List<LinkTransferTaskCDDVO> linkTransferTasks = linkTransferTaskFacade.startCdc();
+            for (LinkTransferTaskCDDVO linkTransferTaskCDDVO : linkTransferTasks) {
                 tableStatusCache.setStatus(linkTransferTaskCDDVO.getSegName(),
                         linkTransferTaskCDDVO.getTargetTablesString(),
                         status, connection);
             }
             startCdc(System.currentTimeMillis());
-        }catch (Exception e){
-            resultVo.setResultDes("重试任务异常,原因为"+e);
-            log.error("重试任务异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("重试任务异常,原因为" + e);
+            log.error("重试任务异常", e);
         }
         return resultVo;
     }
 
     @ApiOperation(value = "startTableCDC")
-    @RequestMapping(value = "/startTableCDC",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask> startTableCDC(@RequestParam("type")String type,@RequestParam("segName") String segName,@RequestParam("tableName")String tableName){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/startTableCDC", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask> startTableCDC(@RequestParam("type") String type, @RequestParam("segName") String segName, @RequestParam("tableName") String tableName) {
+        ResultVo resultVo = new ResultVo();
         try {
             //获取需要监听的表列表
-            if (connection==null||connection.isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 Class.forName("oracle.jdbc.OracleDriver");
                 String toUrl = toLinkUrl;
                 String toUserName = cdctopassword;
-                String toPassWord =toUserName;
+                String toPassWord = toUserName;
                 Properties props = new Properties();
                 props.put("user", toUserName);
                 props.put("password", toPassWord);
                 props.put("oracle.net.CONNECT_TIMEOUT", "10000000");
                 connection = DriverManager.getConnection(toUrl, props);
             }
-            if (tableName.contains("?"))tableName=tableName.substring(0,tableName.length()-1);
-            tableStatusCache.setStatus(segName,tableName, type, connection);
-        }catch (Exception e){
-            resultVo.setResultDes("重试任务异常,原因为"+e);
-            log.error("重试任务异常",e);
+            if (tableName.contains("?")) tableName = tableName.substring(0, tableName.length() - 1);
+            tableStatusCache.setStatus(segName, tableName, type, connection);
+        } catch (Exception e) {
+            resultVo.setResultDes("重试任务异常,原因为" + e);
+            log.error("重试任务异常", e);
         }
         return resultVo;
     }
 
 
     @ApiOperation(value = "getToralCountFromTimertoNow")
-    @RequestMapping(value = "/getToralCountFromTimertoNow",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<String>getToralCountFromTimertoNow(@RequestParam("totalStartTime") Long totalStartTime){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/getToralCountFromTimertoNow", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<String> getToralCountFromTimertoNow(@RequestParam("totalStartTime") Long totalStartTime) {
+        ResultVo resultVo = new ResultVo();
         try {
 //            System
-        }catch (Exception e){
-            resultVo.setResultDes("重试任务异常,原因为"+e);
-            log.error("重试任务异常",e);
+        } catch (Exception e) {
+            resultVo.setResultDes("重试任务异常,原因为" + e);
+            log.error("重试任务异常", e);
         }
         return resultVo;
     }
 
 
     @ApiOperation(value = "getCacheStatus")
-    @RequestMapping(value = "/getCacheStatus",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<String>getCacheStatus(){
-        ResultVo resultVo=new ResultVo();
+    @RequestMapping(value = "/getCacheStatus", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    public ResultVo<String> getCacheStatus() {
+        ResultVo resultVo = new ResultVo();
         try {
-            String result="当前监听进程存活情况--";
-            if (isWorking){
-                result+="存活";
-            }else {
-                result+="不存活";
+            String result = "当前监听进程存活情况--";
+            if (isWorking) {
+                result += "存活";
+            } else {
+                result += "不存活";
             }
             log.info(result);
-            log.info(TableStatusCache.statusMap+"");
-            log.info(SQLSaver.taskQueue+"");
-            log.info(SQLSaver.tableCacheMap+"");
-            log.info(cdcTask.totalCount+"");
-        }catch (Exception e){
-            resultVo.setResultDes("重试任务异常,原因为"+e);
-            log.error("重试任务异常",e);
+            log.info(TableStatusCache.statusMap + "");
+            log.info(SQLSaver.taskQueue + "");
+            log.info(SQLSaver.tableCacheMap + "");
+            log.info(cdcTask.totalCount + "");
+        } catch (Exception e) {
+            resultVo.setResultDes("重试任务异常,原因为" + e);
+            log.error("重试任务异常", e);
         }
         return resultVo;
     }
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
 //        String connectUrl="jdbc:oracle:thin:@//172.16.81.11:1521/hzrsrac";
 //        String targetUserName="sjhl_fy";
 //        String targetPassword="sjhl_pwdfy21";
@@ -412,7 +413,7 @@ public class LinkTransferTaskController  {
 //        props.put("password", toPassWord);
 //        props.put("oracle.net.CONNECT_TIMEOUT", "10000000");
 //       Connection connection = DriverManager.getConnection(toUrl, props);
-        System.out.println(System.currentTimeMillis()+"");
+        System.out.println(System.currentTimeMillis() + "");
     }
 
 }
