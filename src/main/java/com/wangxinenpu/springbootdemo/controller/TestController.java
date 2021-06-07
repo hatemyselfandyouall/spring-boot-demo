@@ -28,8 +28,9 @@ public class TestController {
 
     @RequestMapping("hello")
     public String hello(){
-        log.info("hello log");
-        return "hello Spring";
+        log.info("hello redis");
+        redisTemplate.opsForValue().set("hello","world");
+        return redisTemplate.opsForValue().get("hello")+"";
     }
 
     @RequestMapping(value = "mybtaisTest",method = RequestMethod.GET)
