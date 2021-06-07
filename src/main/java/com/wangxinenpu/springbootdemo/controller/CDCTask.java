@@ -6,7 +6,6 @@ import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.LinkTransfe
 import com.wangxinenpu.springbootdemo.util.DateUtils;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.MSGTYPECONSTANT;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SQLSaver;
-import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SqlDetailDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.TableStatusCache;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.InsertSQLParseDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SQLParseDTO;
@@ -14,17 +13,13 @@ import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SqlParseUtil;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.UpdateSQLParseDTO;
 import com.wangxinenpu.springbootdemo.util.datatransfer.CDCUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 public class CDCTask implements Runnable{
@@ -35,7 +30,6 @@ public class CDCTask implements Runnable{
     private Long totalStartScn;
     private List<LinkTransferTaskCDDVO> linkTransferTasks;
 
-    private DefaultMQProducer defaultMQProducer;
 
     private String fromLinkUrl;
     private String cdcfromusername;
@@ -51,14 +45,14 @@ public class CDCTask implements Runnable{
     private Map<String,String>needAppendMap=new HashMap<>();
 
 
-    public static CDCTask getInstance(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl, String cdcfromusername, String cdcfrompassword,Long totalStartSCN) {
+    public static CDCTask getInstance(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks,  ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl, String cdcfromusername, String cdcfrompassword,Long totalStartSCN) {
         if (instance == null) {
             synchronized (CDCTask.class) {
                 if (instance == null) {
-                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
+                    instance = new CDCTask(totalStartTime,linkTransferTasks,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
                 }else {
                     instance.setWorking(false);
-                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
+                    instance = new CDCTask(totalStartTime,linkTransferTasks,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
                 }
             }
 
@@ -66,11 +60,10 @@ public class CDCTask implements Runnable{
         return instance;
     }
 
-    private CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent,
+    private CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks,  ExceptionWriteCompoent exceptionWriteCompoent,
                     String fromLinkUrl, String cdcfromusername, String cdcfrompassword,Long totalStartSCN) {
         this.totalStartTime = totalStartTime;
         this.linkTransferTasks = linkTransferTasks;
-        this.defaultMQProducer = defaultMQProducer;
         this.exceptionWriteCompoent=exceptionWriteCompoent;
         this.fromLinkUrl=fromLinkUrl;
         this.cdcfromusername=cdcfromusername;
