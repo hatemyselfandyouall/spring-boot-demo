@@ -108,7 +108,7 @@ public class SQLSaver {
             }
             log.info("监听到增量sql数据，进行同步");
             statement. execute(saveTask.getSql());
-            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask);
+            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask.getTime());
         } catch (SQLException e) {
             e.printStackTrace();;
             //todo 错误处理

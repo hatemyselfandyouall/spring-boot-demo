@@ -273,7 +273,7 @@ public class LinkTransferTaskController  {
             }else {
                 isWorking=true;
                 List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
+                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,null);
                 Thread thread=new Thread(cdcTask);
                 thread.start();
             }
@@ -292,7 +292,7 @@ public class LinkTransferTaskController  {
         ResultVo resultVo=new ResultVo();
         try {
             List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
+            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,null);
             Thread thread=new Thread(cdcTask);
             thread.start();
             //获取需要监听的表列表
@@ -350,6 +350,18 @@ public class LinkTransferTaskController  {
     }
 
 
+    @ApiOperation(value = "getToralCountFromTimertoNow")
+    @RequestMapping(value = "/getToralCountFromTimertoNow",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
+    public ResultVo<String>getToralCountFromTimertoNow(@RequestParam("totalStartTime") Long totalStartTime){
+        ResultVo resultVo=new ResultVo();
+        try {
+//            System
+        }catch (Exception e){
+            resultVo.setResultDes("重试任务异常,原因为"+e);
+            log.error("重试任务异常",e);
+        }
+        return resultVo;
+    }
 
 
     @ApiOperation(value = "getCacheStatus")

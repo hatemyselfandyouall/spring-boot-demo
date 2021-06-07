@@ -15,7 +15,6 @@ import com.wangxinenpu.springbootdemo.quartz.config.QuartzConfig;
 import com.wangxinenpu.springbootdemo.quartz.config.TaskConstant;
 import com.wangxinenpu.springbootdemo.service.facade.linkTransTask.DataLinkFacade;
 import com.wangxinenpu.springbootdemo.service.facade.linkTransTask.LinkTransferTaskFacade;
-import com.wangxinenpu.springbootdemo.util.datatransfer.CDCUtil;
 import com.wangxinenpu.springbootdemo.util.datatransfer.DataTransResultVO;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -492,11 +491,12 @@ public class LinkTransferTaskServiceImpl implements LinkTransferTaskFacade {
         if (!fromLink.getLink().getLinkTypeCode().equals(toLink.getLink().getLinkTypeCode()))throw new Exception("目前只支持相同类型数据源的迁移");
         String tableString=linkTransferTask.getTargetTablesString();
         if (StringUtils.isEmpty(tableString)) throw new Exception("未设定迁移表");
-        ResultVo<DataTransResultVO> resultVo= CDCUtil.doTrans(fromLink.getLinkDetail().getUrl(),fromLink.getLinkDetail().getPort(),fromLink.getLinkDetail().getOracleSid(),fromLink.getLinkDetail().getOracleServerName(),fromLink.getLinkDetail().getUsername(),fromLink.getLinkDetail().getPassword(),
-                toLink.getLinkDetail().getUrl(),toLink.getLinkDetail().getUsername(),toLink.getLinkDetail().getPassword(),toLink.getLinkDetail().getPort(),toLink.getLinkDetail().getOracleServerName(),toLink.getLinkDetail().getOracleSid(),fromLink.getLinkDetail().getSchemaName()
-                ,"'INSERT','UPDATE','DELETE'",linkTransferTask.getTargetTablesString(),linkTransferTask.getCdcStartTime(),linkTransferTask.getCdcEndTime(),
-                linkTransferTask.getCdcStartScn(),fromLink.getLink().getLinkTypeCode(),fromLink,toLink,linkTransferTask.getIsOfflineMode());
-        return resultVo;
+//        ResultVo<DataTransResultVO> resultVo= CDCUtil.doTrans(fromLink.getLinkDetail().getUrl(),fromLink.getLinkDetail().getPort(),fromLink.getLinkDetail().getOracleSid(),fromLink.getLinkDetail().getOracleServerName(),fromLink.getLinkDetail().getUsername(),fromLink.getLinkDetail().getPassword(),
+//                toLink.getLinkDetail().getUrl(),toLink.getLinkDetail().getUsername(),toLink.getLinkDetail().getPassword(),toLink.getLinkDetail().getPort(),toLink.getLinkDetail().getOracleServerName(),toLink.getLinkDetail().getOracleSid(),fromLink.getLinkDetail().getSchemaName()
+//                ,"'INSERT','UPDATE','DELETE'",linkTransferTask.getTargetTablesString(),linkTransferTask.getCdcStartTime(),linkTransferTask.getCdcEndTime(),
+//                linkTransferTask.getCdcStartScn(),fromLink.getLink().getLinkTypeCode(),fromLink,toLink,linkTransferTask.getIsOfflineMode());
+//        return resultVo;
+        return null;
     }
 
     private ResultVo<DataTransResultVO> doFullTrans(LinkTransferTask linkTransferTask, LinkShowVO fromLink, LinkShowVO toLink)throws Exception {

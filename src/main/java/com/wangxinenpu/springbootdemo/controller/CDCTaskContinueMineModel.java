@@ -6,33 +6,26 @@ import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.LinkTransfe
 import com.wangxinenpu.springbootdemo.util.DateUtils;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.MSGTYPECONSTANT;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SQLSaver;
-import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SqlDetailDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.TableStatusCache;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.InsertSQLParseDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SQLParseDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SqlParseUtil;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.UpdateSQLParseDTO;
-import com.wangxinenpu.springbootdemo.util.datatransfer.CDCUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class CDCTask implements Runnable{
+public class CDCTaskContinueMineModel implements Runnable{
 
     private final ExceptionWriteCompoent exceptionWriteCompoent;
     private Long totalStartTime;
 
-    private Long totalStartScn;
     private List<LinkTransferTaskCDDVO> linkTransferTasks;
 
     private DefaultMQProducer defaultMQProducer;
@@ -41,7 +34,7 @@ public class CDCTask implements Runnable{
     private String cdcfromusername;
     private String cdcfrompassword;
 
-    private static CDCTask instance;
+    private static CDCTaskContinueMineModel instance;
 
     private boolean working=true;
 
@@ -51,14 +44,14 @@ public class CDCTask implements Runnable{
     private Map<String,String>needAppendMap=new HashMap<>();
 
 
-    public static CDCTask getInstance(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl, String cdcfromusername, String cdcfrompassword,Long totalStartSCN) {
+    public static CDCTaskContinueMineModel getInstance(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl, String cdcfromusername, String cdcfrompassword) {
         if (instance == null) {
-            synchronized (CDCTask.class) {
+            synchronized (CDCTaskContinueMineModel.class) {
                 if (instance == null) {
-                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
+                    instance = new CDCTaskContinueMineModel(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
                 }else {
                     instance.setWorking(false);
-                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
+                    instance = new CDCTaskContinueMineModel(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
                 }
             }
 
@@ -66,8 +59,7 @@ public class CDCTask implements Runnable{
         return instance;
     }
 
-    private CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent,
-                    String fromLinkUrl, String cdcfromusername, String cdcfrompassword,Long totalStartSCN) {
+    private CDCTaskContinueMineModel(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl, String cdcfromusername, String cdcfrompassword) {
         this.totalStartTime = totalStartTime;
         this.linkTransferTasks = linkTransferTasks;
         this.defaultMQProducer = defaultMQProducer;
@@ -75,7 +67,6 @@ public class CDCTask implements Runnable{
         this.fromLinkUrl=fromLinkUrl;
         this.cdcfromusername=cdcfromusername;
         this.cdcfrompassword=cdcfrompassword;
-        this.totalStartScn=totalStartSCN;
     }
 
 
@@ -88,13 +79,9 @@ public class CDCTask implements Runnable{
             String targetUserName = cdcfromusername;
             String targetPassword = cdcfrompassword;
             Connection targetConnection = DriverManager.getConnection(connectUrl, targetUserName, targetPassword);
-            List<String> currentFiles = CDCUtil.getCurrentFiles(targetConnection);
-            List<String> archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "");
-            if (CollectionUtils.isEmpty(archivedFiles)) {
-                archivedFiles=new ArrayList<>();
-            }
-            archivedFiles.addAll(currentFiles);
-            CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles);
+            targetConnection.createStatement().execute("BEGIN dbms_logmnr.start_logmnr(STARTTIME =>to_date('" + startString + "' , 'yyyy-mm-dd hh24:mi:ss'),options => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG + DBMS_LOGMNR.CONTINUOUS_MINE + DBMS_LOGMNR.COMMITTED_DATA_ONLY);END;");
+//            PreparedStatement preparedStatement=targetConnection.prepareStatement("SELECT * FROM v$logmnr_contents where  seg_owner = 'SYNC' and table_name" +
+//                    " in ('AC85')  AND (operation IN ('INSERT','UPDATE','DELETE','DDL'))");
             Set<String> segNames = null;
             Set<String> tableNames = null;
             List<LinkTransferTaskRule> linkTransferTaskRules = new ArrayList<>();
@@ -117,24 +104,14 @@ public class CDCTask implements Runnable{
             }
             tableString = tableString.substring(0, tableString.length() - 1);
             tableString += ")";
+            PreparedStatement preparedStatement = targetConnection.prepareStatement("SELECT * FROM v$logmnr_contents where  " +
+                    "  (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in" + segString + "and table_name in " + tableString);
+            preparedStatement.setFetchSize(10);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            Integer count = 0;
+
+            log.info("开始全量监控");
             while (working) {
-                if (totalStartScn!=null) {
-                    currentFiles = CDCUtil.getCurrentFiles(targetConnection);
-                    archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "");
-                    if (CollectionUtils.isEmpty(archivedFiles)) {
-                        archivedFiles=new ArrayList<>();
-                    }
-                    archivedFiles.addAll(currentFiles);
-                    CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles);
-                }
-                String queryString="SELECT * FROM v$logmnr_contents where  " + "  (operation IN ('INSERT')) and seg_owner in" + segString + "and table_name in " + tableString;
-                if (!StringUtils.isEmpty(totalStartScn)) {
-                    queryString = queryString + "and scn >" + totalStartScn;
-                }
-                System.out.println(queryString);
-                Statement statement = targetConnection.createStatement();
-                statement.setFetchSize(1000);
-                ResultSet resultSet = statement.executeQuery(queryString);
                     try {
                         while (resultSet.next() && working) {
                             totalCount++;
@@ -159,9 +136,10 @@ public class CDCTask implements Runnable{
                                 redoSQL=needAppendMap.get(rowFlag)+redoSQL;
                             }
                             Long scn = resultSet.getLong("scn");
-                            recordSql = redoSQL;
+                        recordSql = redoSQL;
                             recordSCN = scn;
                             if (ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
+
                             String MapTableName = seg_owner + "|" + tableName;
                             String tableStatus = TableStatusCache.getStatus(MapTableName);
                             //如果还没开始全量，这个表的数据不管
@@ -188,9 +166,7 @@ public class CDCTask implements Runnable{
                                 //如果全量已经开始，但是尚未增量，此时进行记录但是不操作
                                 //如果全量已经结束，则按顺序入库
                                 String sql = redoSQL;
-                                Long scnLongValue = scn;
-                                totalStartScn=scn;
-                                startString=timeStamp;
+                                Long scnLongValue = Long.valueOf(scn);
                                 SQLSaver.save(MapTableName, sql, tableStatus, scnLongValue,timeStamp);
                             }
                         }

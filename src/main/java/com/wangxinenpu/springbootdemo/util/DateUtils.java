@@ -146,4 +146,8 @@ public class DateUtils {
 		}
 		return sb.toString();
 	}
+
+	public static void main(String[] args) {
+		System.out.println(parseLongtoDate(1623037905034L,"yyyy-MM-dd HH:mm:ss"));
+	}
 }
