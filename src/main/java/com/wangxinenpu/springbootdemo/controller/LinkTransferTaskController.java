@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Connection;
@@ -42,6 +43,9 @@ public class LinkTransferTaskController  {
 
     @Autowired
     ExceptionWriteCompoent exceptionWriteCompoent;
+
+    private CDCTask cdcTask;
+
     @Value("${cdc.to.linkurl}")
     private String toLinkUrl;
     @Value("${cdc.to.username}")
@@ -269,7 +273,7 @@ public class LinkTransferTaskController  {
             }else {
                 isWorking=true;
                 List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
-                CDCTask cdcTask=new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
+                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
                 Thread thread=new Thread(cdcTask);
                 thread.start();
             }
@@ -282,16 +286,34 @@ public class LinkTransferTaskController  {
         return resultVo;
     }
 
+    @ApiOperation(value = "重建连接")
+    @RequestMapping(value = "/cdcTaskReinit",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
+    public ResultVo<LinkTransferTask>cdcTaskReinit(@RequestParam("totalStartTime") Long totalStartTime){
+        ResultVo resultVo=new ResultVo();
+        try {
+            List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
+            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword);
+            Thread thread=new Thread(cdcTask);
+            thread.start();
+            //获取需要监听的表列表
+            //根据列表进行数据增量入mq的工作
+        }catch (Exception e){
+            resultVo.setResultDes("重试任务异常,原因为"+e);
+            log.error("重试任务异常",e);
+        }
+        return resultVo;
+    }
+
     @ApiOperation(value = "startAllFullCDC")
     @RequestMapping(value = "/startAllFullCDC",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-        public ResultVo<LinkTransferTask>startAllFullCDC(){
+        public ResultVo<LinkTransferTask>startAllFullCDC(@RequestParam(value = "status",required = false,defaultValue = "3") String status){
         ResultVo resultVo=new ResultVo();
         try {
             List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
             for (LinkTransferTaskCDDVO linkTransferTaskCDDVO:linkTransferTasks) {
                 tableStatusCache.setStatus(linkTransferTaskCDDVO.getSegName(),
                         linkTransferTaskCDDVO.getTargetTablesString(),
-                        "3", connection);
+                        status, connection);
             }
             startCdc(System.currentTimeMillis());
         }catch (Exception e){
@@ -327,6 +349,9 @@ public class LinkTransferTaskController  {
         return resultVo;
     }
 
+
+
+
     @ApiOperation(value = "getCacheStatus")
     @RequestMapping(value = "/getCacheStatus",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
     public ResultVo<String>getCacheStatus(){
@@ -342,6 +367,7 @@ public class LinkTransferTaskController  {
             log.info(TableStatusCache.statusMap+"");
             log.info(SQLSaver.taskQueue+"");
             log.info(SQLSaver.tableCacheMap+"");
+            log.info(cdcTask.totalCount+"");
         }catch (Exception e){
             resultVo.setResultDes("重试任务异常,原因为"+e);
             log.error("重试任务异常",e);

@@ -32,6 +32,9 @@ public class SQLSaver {
 
     private Connection connection;
     private Statement statement;
+
+    public String recordSql="";
+    public Long recordSCN=null;
     @Autowired
     ExceptionWriteCompoent exceptionWriteCompoent;
 
@@ -48,7 +51,7 @@ public class SQLSaver {
                 .execute(new Worker());
     }
 
-    public static void save(String tableName, String sql, String tableStatus, Long scn){
+    public static void save(String tableName, String sql, String tableStatus, Long scn, String timeStamp){
         if (tableStatus.equals( MSGTYPECONSTANT.TABLE_STATUS_ISFULL_EXTRACT)){
             TreeMap<Long, String> tableSQLMap=tableCacheMap.get(tableName);
             if (CollectionUtils.isEmpty(tableSQLMap)){
@@ -57,25 +60,27 @@ public class SQLSaver {
             tableSQLMap.put(scn,sql);
             tableCacheMap.put(tableName,tableSQLMap);
         }else {
-            SaveTask saveTask=new SaveTask(scn,sql);
+            SaveTask saveTask=new SaveTask(scn,sql,timeStamp);
             taskQueue.add(saveTask);
         }
     }
 
     public  void  executeSQLs(String tableName, Connection connection) {
+        log.info("开始清空表"+tableName+"的缓存");
         TreeMap<Long, String> sqlMaps=tableCacheMap.get(tableName);
         if (CollectionUtils.isEmpty(sqlMaps)){
             return;
         }else {
             Iterator<Map.Entry<Long, String>> it=sqlMaps.entrySet().iterator();//新建一个迭代器，准备遍历整个Set<Map.EntrySet<String,String>>集合；
-            String recordSql="";
-            Long recordSCN=null;
+
             try (Statement statement=connection.createStatement()){
                 while(it.hasNext()){
                     Map.Entry<Long, String> en=it.next();//
                     recordSql=en.getValue();
                     recordSCN=en.getKey();
+                    log.info("开始清空表"+tableName+"的缓存");
                     statement.execute(recordSql);
+                    log.info("清空一条");
                     //todo 数据入库
             }
             } catch (SQLException e) {
@@ -103,7 +108,7 @@ public class SQLSaver {
             }
             log.info("监听到增量sql数据，进行同步");
             statement. execute(saveTask.getSql());
-            log.info("增量sql数据同步成功");
+            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask);
         } catch (SQLException e) {
             e.printStackTrace();;
             //todo 错误处理
