@@ -81,13 +81,14 @@ public class CDCTask implements Runnable{
 
     @Override
     public void run() {
+        Connection targetConnection=null;
         try {
             Class.forName("oracle.jdbc.OracleDriver");
             String startString = DateUtils.parseLongtoDate(totalStartTime, "yyyy-MM-dd HH:mm:ss");
             String connectUrl = fromLinkUrl;
             String targetUserName = cdcfromusername;
             String targetPassword = cdcfrompassword;
-            Connection targetConnection = DriverManager.getConnection(connectUrl, targetUserName, targetPassword);
+            targetConnection = DriverManager.getConnection(connectUrl, targetUserName, targetPassword);
             List<String> currentFiles = CDCUtil.getCurrentFiles(targetConnection);
             List<String> archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "");
             if (CollectionUtils.isEmpty(archivedFiles)) {
@@ -198,11 +199,22 @@ public class CDCTask implements Runnable{
                     } catch (Throwable e) {
                         log.info("", e);
                         exceptionWriteCompoent.wirte(recordSql, e, recordSCN);
+                    }finally {
+
                     }
             }
             }catch(Exception e){
                 log.error("", e);
+            }finally {
+            try {
+                if (targetConnection!=null&&!targetConnection.isClosed()){
+                    targetConnection.close();
+                }
+            }catch (Exception e){
+                log.error("关闭连接错误",e);
             }
+
+        }
 
     }
 

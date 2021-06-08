@@ -37,16 +37,19 @@ public class SQLSaver {
     public Long recordSCN=null;
     @Autowired
     ExceptionWriteCompoent exceptionWriteCompoent;
+    public LinkedBlockingQueue<Runnable> workerQueues=new LinkedBlockingQueue<>();
 
     public static final Map<String, TreeMap<Long, String>> tableCacheMap=new HashMap<>();
     public static final LinkedBlockingDeque<SaveTask> taskQueue=new LinkedBlockingDeque<>();
+
+    public static Long totalInsertCount=0l;
 
     @PostConstruct
     private void init(){
         //todo initlist
          new ThreadPoolExecutor(
                 4,9,10000l, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(),
+                 workerQueues,
                 SoulThreadFactory.create("save-upstream-task", false))
                 .execute(new Worker());
     }
@@ -79,12 +82,13 @@ public class SQLSaver {
                     recordSql=en.getValue();
                     recordSCN=en.getKey();
                     log.info("开始清空表"+tableName+"的缓存");
+//                    statement.execute("alter session set nls_date_language='american' ");
                     statement.execute(recordSql);
                     log.info("清空一条");
                     //todo 数据入库
             }
             } catch (SQLException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
                 //todo 错误处理
                 exceptionWriteCompoent.wirte(recordSql,e,recordSCN);
             }
@@ -106,18 +110,22 @@ public class SQLSaver {
             if (statement==null||statement.isClosed()){
                 statement= connection.createStatement();
             }
-            log.info("监听到增量sql数据，进行同步");
+//            log.info("监听到增量sql数据，进行同步");
+            totalInsertCount++;
+//            statement.execute("alter session set nls_date_language='american' ");
             statement. execute(saveTask.getSql());
-            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask.getTime());
+//            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask.getTime());
         } catch (SQLException e) {
-            e.printStackTrace();;
+//            e.printStackTrace();;
             //todo 错误处理
             exceptionWriteCompoent.wirte(saveTask.getSql(),e,saveTask.getScn());
         }
 
     }
 
-    class Worker implements Runnable {
+    public class Worker implements Runnable {
+
+        public Long totalCount=0l;
 
         @Override
         public void run() {

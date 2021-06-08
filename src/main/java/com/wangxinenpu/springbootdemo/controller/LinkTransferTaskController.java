@@ -1,6 +1,7 @@
 package com.wangxinenpu.springbootdemo.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTask;
 import com.wangxinenpu.springbootdemo.dataobject.vo.DataListResultDto;
@@ -16,12 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -43,6 +46,8 @@ public class LinkTransferTaskController  {
 
     @Autowired
     ExceptionWriteCompoent exceptionWriteCompoent;
+    @Autowired
+    SQLSaver sqlSaver;
 
     private CDCTask cdcTask;
 
@@ -58,6 +63,11 @@ public class LinkTransferTaskController  {
     private String cdcfromusername;
     @Value("${cdc.from.password}")
     private String cdcfrompassword;
+
+    private Long lastCdcParseCount=0l;
+
+    private Long lastCdcInserteCount=0l;
+
     static {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
@@ -364,11 +374,18 @@ public class LinkTransferTaskController  {
     }
 
 
-    @ApiOperation(value = "getCacheStatus")
+    //3.添加定时任务
+    @Scheduled(cron = "0 0/1 * * * ?")
     @RequestMapping(value = "/getCacheStatus",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
     public ResultVo<String>getCacheStatus(){
         ResultVo resultVo=new ResultVo();
         try {
+            Long nowCdcparseCount=cdcTask.totalCount;
+            Long nowInsertCount=sqlSaver.totalInsertCount;
+            String template="在过去的1分钟里，sql解析器共计解析了"+(nowCdcparseCount-lastCdcParseCount)+"条数据，各SQL写入器分别写入"+(nowInsertCount-lastCdcInserteCount)+"条数据，共计写入"+nowInsertCount+"条数据。解析数据总数为"
+                    +nowCdcparseCount+"入库数据总数为"+nowInsertCount+"队列中排队等待的数据数为"+SQLSaver.taskQueue.size()+"在Map中等待的数据数为"+SQLSaver.tableCacheMap.size();
+            lastCdcParseCount=nowCdcparseCount;
+            lastCdcInserteCount=nowInsertCount;
             String result="当前监听进程存活情况--";
             if (isWorking){
                 result+="存活";
@@ -376,10 +393,11 @@ public class LinkTransferTaskController  {
                 result+="不存活";
             }
             log.info(result);
-            log.info(TableStatusCache.statusMap+"");
-            log.info(SQLSaver.taskQueue+"");
+//            log.info(TableStatusCache.statusMap+"");
+//            log.info(SQLSaver.taskQueue+"");
             log.info(SQLSaver.tableCacheMap+"");
-            log.info(cdcTask.totalCount+"");
+//            log.info(cdcTask.totalCount+"");
+            log.info(template);
         }catch (Exception e){
             resultVo.setResultDes("重试任务异常,原因为"+e);
             log.error("重试任务异常",e);

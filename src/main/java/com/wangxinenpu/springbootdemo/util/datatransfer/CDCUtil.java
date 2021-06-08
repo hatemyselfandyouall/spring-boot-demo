@@ -273,11 +273,11 @@ public class CDCUtil {
 
     }
     public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles) throws SQLException {
-        String callStirng = "alter session set nls_date_language='american'";
-        System.out.println(callStirng);
-        connection
-                .prepareCall(callStirng)
-                .execute();
+//        String callStirng = "alter session set nls_date_language='american'";
+//        System.out.println(callStirng);
+//        connection
+//                .prepareCall(callStirng)
+//                .execute();
         StringBuilder stringBuilder = new StringBuilder("BEGIN ");
         for (int i = 0; i < archivedFiles.size(); i++) {
             if (i == 0) {
@@ -288,7 +288,7 @@ public class CDCUtil {
         }
         stringBuilder.append("dbms_logmnr.START_LOGMNR(  OPTIONS => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG +DBMS_LOGMNR.SKIP_CORRUPTION+ DBMS_LOGMNR.COMMITTED_DATA_ONLY+ DBMS_LOGMNR.NO_ROWID_IN_STMT);");
         stringBuilder.append("END;");
-        callStirng = stringBuilder.toString();
+        String callStirng = stringBuilder.toString();
         System.out.println(callStirng);
         connection
                 .prepareCall(callStirng)
