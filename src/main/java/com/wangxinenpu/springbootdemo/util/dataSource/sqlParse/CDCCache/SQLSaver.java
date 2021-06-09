@@ -2,11 +2,15 @@ package com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache;
 
 import com.wangxinenpu.springbootdemo.dao.mapper.LinkTransferTaskErrorRecordMapper;
 import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
+import com.wangxinenpu.springbootdemo.dao.mapper.LinkTransferTaskRecordMapper;
+import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.sql.Connection;
@@ -29,6 +33,12 @@ public class SQLSaver {
     private String cdctousername;
     @Value("${cdc.to.password}")
     private String cdctopassword;
+
+    @Autowired
+    private LinkTransferTaskRecordMapper linkTransferTaskRecordMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     private Connection connection;
     private Statement statement;
@@ -54,44 +64,26 @@ public class SQLSaver {
                 .execute(new Worker());
     }
 
-    public static void save(String tableName, String sql, String tableStatus, Long scn, String timeStamp){
+    public  void save(String segOwner,String tableName, String sql, String tableStatus, Long scn, String timeStamp){
         if (tableStatus.equals( MSGTYPECONSTANT.TABLE_STATUS_ISFULL_EXTRACT)){
-            TreeMap<Long, String> tableSQLMap=tableCacheMap.get(tableName);
+            TreeMap<Long, String> tableSQLMap=tableCacheMap.get(segOwner+"|"+tableName);
             if (CollectionUtils.isEmpty(tableSQLMap)){
                 tableSQLMap=new TreeMap<>();
             }
             tableSQLMap.put(scn,sql);
-            tableCacheMap.put(tableName,tableSQLMap);
+            tableCacheMap.put(segOwner+"|"+tableName,tableSQLMap);
         }else {
-            SaveTask saveTask=new SaveTask(scn,sql,timeStamp);
-            taskQueue.add(saveTask);
+            redisTemplate.opsForList().leftPush("big:queue",sql);
         }
     }
 
-    public  void  executeSQLs(String tableName, Connection connection) {
+    public  void  executeSQLs(String tableName) {
         log.info("开始清空表"+tableName+"的缓存");
         TreeMap<Long, String> sqlMaps=tableCacheMap.get(tableName);
         if (CollectionUtils.isEmpty(sqlMaps)){
             return;
         }else {
-            Iterator<Map.Entry<Long, String>> it=sqlMaps.entrySet().iterator();//新建一个迭代器，准备遍历整个Set<Map.EntrySet<String,String>>集合；
-
-            try (Statement statement=connection.createStatement()){
-                while(it.hasNext()){
-                    Map.Entry<Long, String> en=it.next();//
-                    recordSql=en.getValue();
-                    recordSCN=en.getKey();
-                    log.info("开始清空表"+tableName+"的缓存");
-//                    statement.execute("alter session set nls_date_language='american' ");
-                    statement.execute(recordSql);
-                    log.info("清空一条");
-                    //todo 数据入库
-            }
-            } catch (SQLException e) {
-//                e.printStackTrace();
-                //todo 错误处理
-                exceptionWriteCompoent.wirte(recordSql,e,recordSCN);
-            }
+            redisTemplate.opsForList().leftPushAll("big:queue",sqlMaps.values());
         }
     }
 
@@ -114,7 +106,8 @@ public class SQLSaver {
             totalInsertCount++;
 //            statement.execute("alter session set nls_date_language='american' ");
             statement. execute(saveTask.getSql());
-//            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask.getTime());
+//            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask.getTime());()
+            updateSaveStatus(saveTask.getSql(),saveTask.getScn(),saveTask.getSegOwner(),saveTask.getTableName());
         } catch (SQLException e) {
 //            e.printStackTrace();;
             //todo 错误处理
@@ -123,6 +116,13 @@ public class SQLSaver {
 
     }
 
+    private void updateSaveStatus(String Sql,Long scn,String segName,String tableName){
+        try {
+            linkTransferTaskRecordMapper.insert(new LinkTransferTaskRecord().setSaveSql(Sql).setScn(scn).setTableName(tableName).setSegOwner(segName));
+        }catch (Exception e){
+            // do no thing
+        }
+    }
     public class Worker implements Runnable {
 
         public Long totalCount=0l;

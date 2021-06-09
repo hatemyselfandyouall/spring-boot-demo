@@ -18,11 +18,11 @@ public class TableStatusCache {
     @Autowired
     SQLSaver sqlSaver;
 
-    public  void setStatus(String segName,String tableName, String status, Connection connection){
+    public  void setStatus(String segName,String tableName, String status){
         statusMap.put(segName+"|"+tableName,status);
         log.info("表"+tableName+"进入状态"+status);
         if (MSGTYPECONSTANT.TABLE_STATUS_FULL_EXTRACT_FINAL.equals(status)){
-            sqlSaver.executeSQLs(segName+"|"+tableName,connection);
+            sqlSaver.executeSQLs(segName+"|"+tableName);
         }
     }
 

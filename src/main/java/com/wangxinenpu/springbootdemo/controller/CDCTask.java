@@ -1,12 +1,13 @@
 package com.wangxinenpu.springbootdemo.controller;
 
 import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
+import com.wangxinenpu.springbootdemo.dao.mapper.LinkTransferTaskTotalMapper;
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskRule;
+import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskTotal;
 import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.LinkTransferTaskCDDVO;
 import com.wangxinenpu.springbootdemo.util.DateUtils;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.MSGTYPECONSTANT;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SQLSaver;
-import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SqlDetailDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.TableStatusCache;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.InsertSQLParseDTO;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SQLParseDTO;
@@ -15,15 +16,13 @@ import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.UpdateSQLParseDTO
 import com.wangxinenpu.springbootdemo.util.datatransfer.CDCUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,17 +47,24 @@ public class CDCTask implements Runnable{
     public String recordSql = "";
     public Long recordSCN = null;
     public Long totalCount=0l;
+    public Long redisTotalCount=0l;
+    private RedisTemplate redisTemplate;
+    private LinkTransferTaskTotal linkTransferTaskTotal;
+    private LinkTransferTaskTotalMapper linkTransferTaskTotalMapper;
+    private SQLSaver sqlSaver;
     private Map<String,String>needAppendMap=new HashMap<>();
 
 
-    public static CDCTask getInstance(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl, String cdcfromusername, String cdcfrompassword,Long totalStartSCN) {
+    public static CDCTask getInstance(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl,
+                                      String cdcfromusername, String cdcfrompassword, Long totalStartSCN, LinkTransferTaskTotal linkTransferTaskTotal,
+    LinkTransferTaskTotalMapper linkTransferTaskTotalMapper,RedisTemplate redisTemplate,SQLSaver sqlSaver) {
         if (instance == null) {
             synchronized (CDCTask.class) {
                 if (instance == null) {
-                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
+                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
                 }else {
                     instance.setWorking(false);
-                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN);
+                    instance = new CDCTask(totalStartTime,linkTransferTasks,defaultMQProducer,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
                 }
             }
 
@@ -67,7 +73,10 @@ public class CDCTask implements Runnable{
     }
 
     private CDCTask(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent,
-                    String fromLinkUrl, String cdcfromusername, String cdcfrompassword,Long totalStartSCN) {
+                    String fromLinkUrl, String cdcfromusername,
+                    String cdcfrompassword, Long totalStartSCN,
+                    LinkTransferTaskTotal linkTransferTaskTotal, LinkTransferTaskTotalMapper linkTransferTaskTotalMapper,
+                    RedisTemplate redisTemplate,SQLSaver sqlSaver) {
         this.totalStartTime = totalStartTime;
         this.linkTransferTasks = linkTransferTasks;
         this.defaultMQProducer = defaultMQProducer;
@@ -76,6 +85,8 @@ public class CDCTask implements Runnable{
         this.cdcfromusername=cdcfromusername;
         this.cdcfrompassword=cdcfrompassword;
         this.totalStartScn=totalStartSCN;
+        this.redisTemplate=redisTemplate;
+        this.sqlSaver=sqlSaver;
     }
 
 
@@ -95,7 +106,7 @@ public class CDCTask implements Runnable{
                 archivedFiles=new ArrayList<>();
             }
             archivedFiles.addAll(currentFiles);
-            CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles);
+            CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles,totalStartScn,startString);
             Set<String> segNames = null;
             Set<String> tableNames = null;
             List<LinkTransferTaskRule> linkTransferTaskRules = new ArrayList<>();
@@ -126,18 +137,17 @@ public class CDCTask implements Runnable{
                         archivedFiles=new ArrayList<>();
                     }
                     archivedFiles.addAll(currentFiles);
-                    CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles);
+                    CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles,totalStartScn,startString);
                 }
-                String queryString="SELECT * FROM v$logmnr_contents where  " + "  (operation IN ('INSERT')) and seg_owner in" + segString + "and table_name in " + tableString;
-                if (!StringUtils.isEmpty(totalStartScn)) {
-                    queryString = queryString + "and scn >" + totalStartScn;
-                }
-                System.out.println(queryString);
+                String queryString="SELECT * FROM v$logmnr_contents where  " + "  (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in" + segString + "and table_name in " + tableString;
                 Statement statement = targetConnection.createStatement();
                 statement.setFetchSize(1000);
+                log.info("进行logminer解析");
                 ResultSet resultSet = statement.executeQuery(queryString);
-                    try {
+                log.info("解析结束，获得结果集");
+                try {
                         while (resultSet.next() && working) {
+                            Long start=System.currentTimeMillis();
                             totalCount++;
                             String redoSQL = resultSet.getString("sql_redo");
                         if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
@@ -152,7 +162,6 @@ public class CDCTask implements Runnable{
                             if ("1".equals(CSF)&&needAppendMap.get(rowFlag)==null){
                                 if (needAppendMap.get(rowFlag)==null){
                                     needAppendMap.put(rowFlag,redoSQL);
-//                                    log.info("记录到需要组装的sql"+redoSQL);
                                     continue;
                                 }
                             }
@@ -162,41 +171,25 @@ public class CDCTask implements Runnable{
                             Long scn = resultSet.getLong("scn");
                             recordSql = redoSQL;
                             recordSCN = scn;
+//                            System.out.println(System.currentTimeMillis()-start+"2");
                             if (ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
-                            String MapTableName = seg_owner + "|" + tableName;
+//                                System.out.println(System.currentTimeMillis()-start+"3");
+                                String MapTableName = seg_owner + "|" + tableName;
                             String tableStatus = TableStatusCache.getStatus(MapTableName);
                             //如果还没开始全量，这个表的数据不管
                             if (org.apache.commons.lang3.StringUtils.isEmpty(tableStatus) || tableStatus.equals(MSGTYPECONSTANT.TABLE_STATUS_NOT_INITED_YET)) {
 
                             } else {
-                                //对rowid的特殊处理
-                                if (redoSQL.contains("ROWID") && ("UPDATE".equals(opeartion) || "DELETE".equals(opeartion))) {
-//                                    redoSQL.replaceAll("and ROWID=.*", "");
-//                                    String rowIdValue = SqlParseUtil.getRowIdFromSQL(redoSQL, opeartion);
-//                                    String pkName = getPK(tableName, targetConnection);
-//                                    Statement statement = targetConnection.createStatement();
-//                                    ResultSet tempResultSet = statement.executeQuery("select " + pkName + " from " + seg_owner + "." + tableName + " where ROWID= '" + rowIdValue + "'");
-//                                    if (tempResultSet.next()) {
-//                                        redoSQL = redoSQL.replaceAll("where.*", "where ");
-//                                        redoSQL = redoSQL + "\"" + pkName + "\" = '" + tempResultSet.getString(pkName) + "'";
-//                                    } else {
-//                                        String whereStr=SqlParseUtil.test_delete_column(recordSql);
-//                                        if (whereStr!=null&&whereStr.contains(pkName)) {
-                                            redoSQL = redoSQL.replaceAll("and ROWID =.*", "");
-//                                        }
-//                                    }
-                                }
-                                //如果全量已经开始，但是尚未增量，此时进行记录但是不操作
-                                //如果全量已经结束，则按顺序入库
                                 String sql = redoSQL;
-                                Long scnLongValue = scn;
-                                totalStartScn=scn;
+                                totalStartScn = scn;
                                 startString=timeStamp;
-                                SQLSaver.save(MapTableName, sql, tableStatus, scnLongValue,timeStamp);
+                                redisTotalCount++;
+                                sqlSaver.save(seg_owner,tableName, sql, tableStatus, scn,timeStamp);
+                            }
                             }
                         }
-                        }
-                    } catch (Throwable e) {
+                    log.info("结果集分析结束"+totalCount);
+                } catch (Throwable e) {
                         log.info("", e);
                         exceptionWriteCompoent.wirte(recordSql, e, recordSCN);
                     }finally {
@@ -214,6 +207,18 @@ public class CDCTask implements Runnable{
                 log.error("关闭连接错误",e);
             }
 
+        }
+
+    }
+
+    private void saveNowStatus(Long scn, String timeStamp) {
+        try {
+            Executors.newSingleThreadExecutor().submit(()->{
+                linkTransferTaskTotal.setNowParseScn(scn).setNowParseTime(timeStamp);
+                linkTransferTaskTotalMapper.updateByPrimaryKey(linkTransferTaskTotal);
+            });
+        }catch (Exception e){
+            //do no thing
         }
 
     }

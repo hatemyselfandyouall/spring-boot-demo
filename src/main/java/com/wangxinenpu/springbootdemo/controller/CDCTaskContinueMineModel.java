@@ -167,7 +167,7 @@ public class CDCTaskContinueMineModel implements Runnable{
                                 //如果全量已经结束，则按顺序入库
                                 String sql = redoSQL;
                                 Long scnLongValue = Long.valueOf(scn);
-                                SQLSaver.save(MapTableName, sql, tableStatus, scnLongValue,timeStamp);
+//                                SQLSaver.save(MapTableName, sql, tableStatus, scnLongValue,timeStamp);
                             }
                         }
                         }

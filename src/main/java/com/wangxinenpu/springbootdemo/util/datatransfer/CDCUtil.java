@@ -56,99 +56,99 @@ public class CDCUtil {
         try {
             long executeStartTime = System.nanoTime();
             log.info("开始测试");
-            Connection connection = DriverManager.getConnection(url, userName, passWord);
-            Connection targetConnection = DriverManager.getConnection(target_url, targetUserName, targetPassword);
-//            prepareNLS(connection);
-            List<String> currentFiles = getCurrentFiles(connection);
-            List<String> archivedFiles = getArchivedFiles(connection, startTime, endTime);
-            if (CollectionUtils.isEmpty(archivedFiles)) {
-                archivedFiles=new ArrayList<>();
-            }
-            archivedFiles.addAll(currentFiles);
-            startLogMnrWithArchivedFiles(connection, archivedFiles);
-
-            Statement statement = connection.createStatement();
-            statement.setFetchSize(1000);
-            statement.setQueryTimeout(0);
-            String queryString = String.format("SELECT * FROM v$logmnr_contents where    (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in('EMPQUERY','OTHERQUERY','VILQUERY','INJURY')and table_name in ('ACD8','RF02','LA02','LA06','LC48','LC47','RF08','AC35','LC46','LC45','AC51','BC20','MV_BE03_JZXM','AA10','AC50','MV_BE03_DW','EXT6802','LC31','EXT6803','LC30','AA06','LC37','AA05','AA02','AA03','RC01_SJZ','AC43','AC62','BB10','AC63','AC60','MV_BB02','AC61','BB08','AA17','LC69','LC68','AC53','LCE1','LCE4','LCE3','MV_BE03_RY','LC51','AE28','AD07','AE29','LC59','LC58','LC57','AA26','AE23','LC56','AC66','AC67','IC08','IC09','AC82','AC83','MV_BC02','IC07','AC80','IC92','IC95','IC96','RB01_SJZ','IC93','LC04','BA08','LC03','IC10','LC01','BA06','AC77','BA04','IC13','BC43','MV_BC15','MV_BC12','MV_BE03_CSQ','AC92','AC90','MV_BC95','AD27','IC88','AC05','IC89','AC02','IC87','AC01','IC05','LCB2','MV_BC60','MV_AC93','MV_IC98','MV_IC97','LB01','MV_IC91','IC30','MV_IC94','MV_IC90','LB02','AE53','AC97','BF41','BC65','AB07','AF02','IC20','AB01','AB02','AC20','LC17')");
-            if (!StringUtils.isEmpty(startSCN)) {
-                queryString = queryString + "and scn >" + startSCN;
-            }
-            if (!StringUtils.isEmpty(startTime)) {
-                queryString += "and timestamp > to_date('" + startTime + "', 'yyyy-mm-dd hh24:mi:ss')";
-            }
-            if (!StringUtils.isEmpty(endTime)) {
-                queryString += "and timestamp < to_date('" + endTime + "', 'yyyy-mm-dd hh24:mi:ss')";
-            }
-            log.info("调用String为" + queryString);
-            ResultSet resultSet = statement
-                    .executeQuery(queryString
-                    );
-            log.info("进入循环");
-            int rowCount = 0;
-            PreparedStatement tempStatement = null;
-//            List<String> redoSQls=new ArrayList<>();
-            Map<String, Map<String, List<String>>> insertMap = new HashMap<>();
-            Map<String, TablePrestatementVO> tablePrestatementVOMap = new HashMap<>();
-            /**
-             * 此处涉及到一个数据插入的问题，单纯以数据取出为标准，5万条的查询时间为8秒，但是，保存到新的库，5w条的用时就很长了，这里的做法:
-             * step1.将数据以5万条为单位放入内存
-             * step2.将数据根据所属表分组
-             * step3.将表中数据根据根据表-操作类型进行批量操作--这里处于效率考虑，必须使用preStatement，试试这样优化之后的效果吧
-             */
-            String lastSCN = "";
-            String lastTime="";
-            DataTransResultVO dataTransResultVO=null;
-            String callStirng = "alter session set nls_date_language='american'";
-//                System.out.println(callStirng);
-            targetConnection
-                    .prepareCall(callStirng)
-                    .execute();
-            Long insertSuccessCount=0l;Long insertFailCount=0l;Long updateSuccessCount=0l;Long updateFailCount=0l;Long deleteSuccessCount=0l;Long deleteFailCount=0l;
-            List<StatementExecuteFailDTO> statementExecuteFailDTOS=new ArrayList<>();
-            while (resultSet.next()) {
-                rowCount++;
-                String redoSQL = resultSet.getString("sql_redo");
-                if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
-                    redoSQL = redoSQL.split(";")[0];
-                }
-                String tableName = resultSet.getString("table_name");
-                String opeartion = resultSet.getString("operation");
-                if (insertMap.get(tableName) == null) {
-                    Map<String, List<String>> operationMap = new HashMap<>();
-                    List<String> tempList = new ArrayList<>();
-                    tempList.add(redoSQL);
-                    operationMap.put(opeartion, tempList);
-                    insertMap.put(tableName, operationMap);
-                } else {
-                    Map<String, List<String>> operationMap = insertMap.get(tableName);
-                    if (operationMap.get(opeartion) == null) {
-                        List<String> tempList = new ArrayList<>();
-                        tempList.add(redoSQL);
-                        operationMap.put(opeartion, tempList);
-                    } else {
-                        List<String> redoSqls = operationMap.get(opeartion);
-                        redoSqls.add(redoSQL);
-                    }
-                }
-                if (rowCount >= 1000) {
-                    doBatchSave(targetConnection, insertMap, tablePrestatementVOMap,insertSuccessCount,insertFailCount,updateSuccessCount,updateFailCount,deleteSuccessCount,deleteFailCount,toLink);
-                    insertMap.clear();
-                    rowCount = 0;
-                }
-                lastSCN = resultSet.getString("scn");
-                lastTime=resultSet.getString("timestamp");
-                dataTransResultVO=new DataTransResultVO().setLastScn(lastSCN).setLastTime(lastTime.substring(0,lastTime.length()-2));
-            }
-            doBatchSave(targetConnection, insertMap, tablePrestatementVOMap, insertSuccessCount, insertFailCount, updateSuccessCount, updateFailCount, deleteSuccessCount, deleteFailCount, toLink);
-            log.info("查询时的最终scn为" + lastSCN);
-            dataTransResultVO.setSuccessTransRowCount(insertSuccessCount+updateSuccessCount+deleteSuccessCount);
-            dataTransResultVO.setFailTransRowCount(insertFailCount+updateFailCount+deleteFailCount);
-            long executeEndTime = System.nanoTime();
-            dataTransResultVO.setExecuteTimeSecond(executeEndTime-executeStartTime);
-            dataTransResultVO.setExecuteTime(DateUtils.formatTime(executeEndTime-executeStartTime));
-            resultVo.setResult(dataTransResultVO);
-            resultVo.setResultDes("进行oracle增量抽取成功，最终的scn为"+lastSCN);
+//            Connection connection = DriverManager.getConnection(url, userName, passWord);
+//            Connection targetConnection = DriverManager.getConnection(target_url, targetUserName, targetPassword);
+////            prepareNLS(connection);
+//            List<String> currentFiles = getCurrentFiles(connection);
+//            List<String> archivedFiles = getArchivedFiles(connection, startTime, endTime);
+//            if (CollectionUtils.isEmpty(archivedFiles)) {
+//                archivedFiles=new ArrayList<>();
+//            }
+//            archivedFiles.addAll(currentFiles);
+//            startLogMnrWithArchivedFiles(connection, archivedFiles,null,startTime);
+//
+//            Statement statement = connection.createStatement();
+//            statement.setFetchSize(1000);
+//            statement.setQueryTimeout(0);
+//            String queryString = String.format("SELECT * FROM v$logmnr_contents where    (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in('EMPQUERY','OTHERQUERY','VILQUERY','INJURY')and table_name in ('ACD8','RF02','LA02','LA06','LC48','LC47','RF08','AC35','LC46','LC45','AC51','BC20','MV_BE03_JZXM','AA10','AC50','MV_BE03_DW','EXT6802','LC31','EXT6803','LC30','AA06','LC37','AA05','AA02','AA03','RC01_SJZ','AC43','AC62','BB10','AC63','AC60','MV_BB02','AC61','BB08','AA17','LC69','LC68','AC53','LCE1','LCE4','LCE3','MV_BE03_RY','LC51','AE28','AD07','AE29','LC59','LC58','LC57','AA26','AE23','LC56','AC66','AC67','IC08','IC09','AC82','AC83','MV_BC02','IC07','AC80','IC92','IC95','IC96','RB01_SJZ','IC93','LC04','BA08','LC03','IC10','LC01','BA06','AC77','BA04','IC13','BC43','MV_BC15','MV_BC12','MV_BE03_CSQ','AC92','AC90','MV_BC95','AD27','IC88','AC05','IC89','AC02','IC87','AC01','IC05','LCB2','MV_BC60','MV_AC93','MV_IC98','MV_IC97','LB01','MV_IC91','IC30','MV_IC94','MV_IC90','LB02','AE53','AC97','BF41','BC65','AB07','AF02','IC20','AB01','AB02','AC20','LC17')");
+//            if (!StringUtils.isEmpty(startSCN)) {
+//                queryString = queryString + "and scn >" + startSCN;
+//            }
+//            if (!StringUtils.isEmpty(startTime)) {
+//                queryString += "and timestamp > to_date('" + startTime + "', 'yyyy-mm-dd hh24:mi:ss')";
+//            }
+//            if (!StringUtils.isEmpty(endTime)) {
+//                queryString += "and timestamp < to_date('" + endTime + "', 'yyyy-mm-dd hh24:mi:ss')";
+//            }
+//            log.info("调用String为" + queryString);
+//            ResultSet resultSet = statement
+//                    .executeQuery(queryString
+//                    );
+//            log.info("进入循环");
+//            int rowCount = 0;
+//            PreparedStatement tempStatement = null;
+////            List<String> redoSQls=new ArrayList<>();
+//            Map<String, Map<String, List<String>>> insertMap = new HashMap<>();
+//            Map<String, TablePrestatementVO> tablePrestatementVOMap = new HashMap<>();
+//            /**
+//             * 此处涉及到一个数据插入的问题，单纯以数据取出为标准，5万条的查询时间为8秒，但是，保存到新的库，5w条的用时就很长了，这里的做法:
+//             * step1.将数据以5万条为单位放入内存
+//             * step2.将数据根据所属表分组
+//             * step3.将表中数据根据根据表-操作类型进行批量操作--这里处于效率考虑，必须使用preStatement，试试这样优化之后的效果吧
+//             */
+//            String lastSCN = "";
+//            String lastTime="";
+////            DataTransResultVO dataTransResultVO=null;
+////            String callStirng = "alter session set nls_date_language='american'";
+//////                System.out.println(callStirng);
+////            targetConnection
+////                    .prepareCall(callStirng)
+////                    .execute();
+//            Long insertSuccessCount=0l;Long insertFailCount=0l;Long updateSuccessCount=0l;Long updateFailCount=0l;Long deleteSuccessCount=0l;Long deleteFailCount=0l;
+//            List<StatementExecuteFailDTO> statementExecuteFailDTOS=new ArrayList<>();
+//            while (resultSet.next()) {
+//                rowCount++;
+//                String redoSQL = resultSet.getString("sql_redo");
+//                if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
+//                    redoSQL = redoSQL.split(";")[0];
+//                }
+//                String tableName = resultSet.getString("table_name");
+//                String opeartion = resultSet.getString("operation");
+//                if (insertMap.get(tableName) == null) {
+//                    Map<String, List<String>> operationMap = new HashMap<>();
+//                    List<String> tempList = new ArrayList<>();
+//                    tempList.add(redoSQL);
+//                    operationMap.put(opeartion, tempList);
+//                    insertMap.put(tableName, operationMap);
+//                } else {
+//                    Map<String, List<String>> operationMap = insertMap.get(tableName);
+//                    if (operationMap.get(opeartion) == null) {
+//                        List<String> tempList = new ArrayList<>();
+//                        tempList.add(redoSQL);
+//                        operationMap.put(opeartion, tempList);
+//                    } else {
+//                        List<String> redoSqls = operationMap.get(opeartion);
+//                        redoSqls.add(redoSQL);
+//                    }
+//                }
+//                if (rowCount >= 1000) {
+//                    doBatchSave(targetConnection, insertMap, tablePrestatementVOMap,insertSuccessCount,insertFailCount,updateSuccessCount,updateFailCount,deleteSuccessCount,deleteFailCount,toLink);
+//                    insertMap.clear();
+//                    rowCount = 0;
+//                }
+//                lastSCN = resultSet.getString("scn");
+//                lastTime=resultSet.getString("timestamp");
+//                dataTransResultVO=new DataTransResultVO().setLastScn(lastSCN).setLastTime(lastTime.substring(0,lastTime.length()-2));
+//            }
+//            doBatchSave(targetConnection, insertMap, tablePrestatementVOMap, insertSuccessCount, insertFailCount, updateSuccessCount, updateFailCount, deleteSuccessCount, deleteFailCount, toLink);
+//            log.info("查询时的最终scn为" + lastSCN);
+//            dataTransResultVO.setSuccessTransRowCount(insertSuccessCount+updateSuccessCount+deleteSuccessCount);
+//            dataTransResultVO.setFailTransRowCount(insertFailCount+updateFailCount+deleteFailCount);
+//            long executeEndTime = System.nanoTime();
+//            dataTransResultVO.setExecuteTimeSecond(executeEndTime-executeStartTime);
+//            dataTransResultVO.setExecuteTime(DateUtils.formatTime(executeEndTime-executeStartTime));
+//            resultVo.setResult(dataTransResultVO);
+//            resultVo.setResultDes("进行oracle增量抽取成功，最终的scn为"+lastSCN);
             resultVo.setSuccess(true);
 //            resultVo.setResultDes(lastSCN);
             return resultVo;
@@ -170,12 +170,12 @@ public class CDCUtil {
     public static void startLogMnr(Connection connection, String timestamp) throws SQLException {
         try {
             if (connection != null) {
-                String callStirng = "alter session set nls_date_language='american'";
+//                String callStirng = "alter session set nls_date_language='american'";
 //                System.out.println(callStirng);
-                connection
-                        .prepareCall(callStirng)
-                        .execute();
-                callStirng = "BEGIN  \n" +
+//                connection
+//                        .prepareCall(callStirng)
+//                        .execute();
+                String callStirng = "BEGIN  \n" +
                         "dbms_logmnr.add_logfile(logfilename=>'/data/oracle/oradata/orcl/redo03.log',options=>dbms_logmnr.NEW);  \n" +
                         "dbms_logmnr.add_logfile(logfilename=>'/data/oracle/oradata/orcl/redo02.log',options=>dbms_logmnr.ADDFILE);  \n" +
                         "dbms_logmnr.add_logfile(logfilename=>'/data/oracle/oradata/orcl/redo01.log',options=>dbms_logmnr.ADDFILE);  \n" +
@@ -237,7 +237,7 @@ public class CDCUtil {
             archivedFiles=new ArrayList<>();
         }
         archivedFiles.addAll(currentFiles);
-        startLogMnrWithArchivedFiles(connection, archivedFiles);
+        startLogMnrWithArchivedFiles(connection, archivedFiles,null,null);
 
         Statement statement = connection.createStatement();
         statement.setFetchSize(1000);
@@ -272,7 +272,7 @@ public class CDCUtil {
         }
 
     }
-    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles) throws SQLException {
+    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles,Long scn,String time) throws SQLException {
 //        String callStirng = "alter session set nls_date_language='american'";
 //        System.out.println(callStirng);
 //        connection
@@ -286,7 +286,15 @@ public class CDCUtil {
                 stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(i)).append("',options=>dbms_logmnr.ADDFILE);");
             }
         }
-        stringBuilder.append("dbms_logmnr.START_LOGMNR(  OPTIONS => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG +DBMS_LOGMNR.SKIP_CORRUPTION+ DBMS_LOGMNR.COMMITTED_DATA_ONLY+ DBMS_LOGMNR.NO_ROWID_IN_STMT);");
+        stringBuilder.append("dbms_logmnr.START_LOGMNR(");
+        if (scn!=null){
+            stringBuilder.append("startscn=> ").append(scn+"").append(",");
+        }else {
+            if (!StringUtils.isEmpty(time)){
+                stringBuilder.append("starttime=> to_date('").append(time).append("', 'yyyy-mm-dd hh24:mi:ss'),");
+            }
+        }
+        stringBuilder.append(" OPTIONS => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG +DBMS_LOGMNR.SKIP_CORRUPTION+ DBMS_LOGMNR.COMMITTED_DATA_ONLY+ DBMS_LOGMNR.NO_ROWID_IN_STMT);");
         stringBuilder.append("END;");
         String callStirng = stringBuilder.toString();
         System.out.println(callStirng);
