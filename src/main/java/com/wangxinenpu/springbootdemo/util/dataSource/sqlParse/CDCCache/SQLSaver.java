@@ -75,7 +75,8 @@ public class SQLSaver {
             tableSQLMap.put(scn,sql);
             tableCacheMap.put(segOwner+"|"+tableName,tableSQLMap);
         }else {
-            redisTemplate.opsForList().leftPush("big:queue",sql);
+            taskQueue.add(new SaveTask(segOwner,tableName,scn,sql,timeStamp));
+//            redisTemplate.opsForList().leftPush("big:queue",sql);
         }
     }
 
@@ -93,27 +94,27 @@ public class SQLSaver {
     }
 
     private void execute(SaveTask saveTask) {
-        String toUrl=toLinkUrl;
-        String toUserName=cdctousername;
-        String toPassWord=cdctopassword;
-        Properties props = new Properties() ;
-        props.put( "user" , toUserName) ;
-        props.put( "password" , toPassWord) ;
-        props.put( "oracle.net.CONNECT_TIMEOUT" , "10000000") ;
+//        String toUrl=toLinkUrl;
+//        String toUserName=cdctousername;
+//        String toPassWord=cdctopassword;
+//        Properties props = new Properties() ;
+//        props.put( "user" , toUserName) ;
+//        props.put( "password" , toPassWord) ;
+//        props.put( "oracle.net.CONNECT_TIMEOUT" , "10000000") ;
         try {
-        if (connection==null||connection.isClosed()){
-            connection= DriverManager.getConnection(toUrl, props);
-        }
-            if (statement==null||statement.isClosed()){
-                statement= connection.createStatement();
-            }
+//        if (connection==null||connection.isClosed()){
+//            connection= DriverManager.getConnection(toUrl, props);
+//        }
+//            if (statement==null||statement.isClosed()){
+//                statement= connection.createStatement();
+//            }
 //            log.info("监听到增量sql数据，进行同步");
-            totalInsertCount++;
-//            statement.execute("alter session set nls_date_language='american' ");
-            statement. execute(saveTask.getSql());
+            redisTemplate.opsForList().leftPush("big:queue",saveTask.getSql());
+//            totalInsertCount++;
+////            statement.execute("alter session set nls_date_language='american' ");
+//            statement. execute(saveTask.getSql());
 //            log.info("增量sql数据同步成功，总体最终scn为"+saveTask.getScn()+"|"+saveTask.getTime());()
-            updateSaveStatus(saveTask.getSql(),saveTask.getScn(),saveTask.getSegOwner(),saveTask.getTableName());
-        } catch (SQLException e) {
+        } catch (Exception e) {
 //            e.printStackTrace();;
             //todo 错误处理
             exceptionWriteCompoent.wirte(saveTask.getSql(),e,saveTask.getScn());

@@ -397,8 +397,9 @@ public class LinkTransferTaskController  {
             }
             log.info(result);
             log.info(TableStatusCache.statusMap+"");
-//            log.info(SQLSaver.taskQueue+"");
-//            log.info(SQLSaver.tableCacheMap+"");
+            log.info("lastScn"+cdcTask.totalStartScn);
+            log.info("lastScn"+cdcTask.totalStartTime);
+            log.info(SQLSaver.tableCacheMap+"");
 //            log.info(cdcTask.totalCount+"");
             log.info(template);
         }catch (Exception e){

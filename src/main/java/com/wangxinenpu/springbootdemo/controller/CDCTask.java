@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 public class CDCTask implements Runnable{
 
     private final ExceptionWriteCompoent exceptionWriteCompoent;
-    private Long totalStartTime;
+    public Long totalStartTime;
 
-    private Long totalStartScn;
+    public Long totalStartScn;
     private List<LinkTransferTaskCDDVO> linkTransferTasks;
 
     private DefaultMQProducer defaultMQProducer;
@@ -130,33 +130,35 @@ public class CDCTask implements Runnable{
             tableString = tableString.substring(0, tableString.length() - 1);
             tableString += ")";
             while (working) {
-                if (totalStartScn!=null) {
-                    currentFiles = CDCUtil.getCurrentFiles(targetConnection);
-                    archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "");
-                    if (CollectionUtils.isEmpty(archivedFiles)) {
-                        archivedFiles=new ArrayList<>();
-                    }
-                    archivedFiles.addAll(currentFiles);
-                    CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles,totalStartScn,startString);
-                }
-                String queryString="SELECT * FROM v$logmnr_contents where  " + "  (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in" + segString + "and table_name in " + tableString;
-                Statement statement = targetConnection.createStatement();
-                statement.setFetchSize(1000);
-                log.info("进行logminer解析");
-                ResultSet resultSet = statement.executeQuery(queryString);
-                log.info("解析结束，获得结果集");
+                Statement statement=null;
                 try {
+//                    if (totalStartScn!=null) {
+                        currentFiles = CDCUtil.getCurrentFiles(targetConnection);
+                        archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "");
+                        if (CollectionUtils.isEmpty(archivedFiles)) {
+                            archivedFiles=new ArrayList<>();
+                        }
+                        archivedFiles.addAll(currentFiles);
+                        CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles,totalStartScn,startString);
+//                    }
+                    String queryString="SELECT * FROM v$logmnr_contents where  " + "  (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in" + segString + "and table_name in " + tableString;
+                    statement = targetConnection.createStatement();
+                    statement.setFetchSize(1000);
+                    log.info("进行logminer解析");
+                    ResultSet resultSet = statement.executeQuery(queryString);
+                    log.info("解析结束，获得结果集");
+                    try {
                         while (resultSet.next() && working) {
                             Long start=System.currentTimeMillis();
                             totalCount++;
                             String redoSQL = resultSet.getString("sql_redo");
-                        if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
-                            redoSQL = redoSQL.substring(0, redoSQL.length() - 1);
-                        }
-                        String tableName = resultSet.getString("table_name");
-                        String opeartion = resultSet.getString("operation");
-                        String seg_owner = resultSet.getString("seg_owner");
-                        String timeStamp = resultSet.getString("timestamp");
+                            if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
+                                redoSQL = redoSQL.substring(0, redoSQL.length() - 1);
+                            }
+                            String tableName = resultSet.getString("table_name");
+                            String opeartion = resultSet.getString("operation");
+                            String seg_owner = resultSet.getString("seg_owner");
+                            String timeStamp = resultSet.getString("timestamp");
                             String CSF = resultSet.getString("CSF");
                             String rowFlag=resultSet.getString("RS_ID")+"|"+resultSet.getString("SSN");
                             if ("1".equals(CSF)&&needAppendMap.get(rowFlag)==null){
@@ -175,29 +177,41 @@ public class CDCTask implements Runnable{
                             if (ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
 //                                System.out.println(System.currentTimeMillis()-start+"3");
                                 String MapTableName = seg_owner + "|" + tableName;
-                            String tableStatus = TableStatusCache.getStatus(MapTableName);
-                            //如果还没开始全量，这个表的数据不管
-                            if (org.apache.commons.lang3.StringUtils.isEmpty(tableStatus) || tableStatus.equals(MSGTYPECONSTANT.TABLE_STATUS_NOT_INITED_YET)) {
+                                String tableStatus = TableStatusCache.getStatus(MapTableName);
+                                //如果还没开始全量，这个表的数据不管
+                                if (org.apache.commons.lang3.StringUtils.isEmpty(tableStatus) || tableStatus.equals(MSGTYPECONSTANT.TABLE_STATUS_NOT_INITED_YET)) {
 
-                            } else {
-                                String sql = redoSQL;
-                                totalStartScn = scn;
-                                startString=timeStamp;
-                                redisTotalCount++;
-                                sqlSaver.save(seg_owner,tableName, sql, tableStatus, scn,timeStamp);
-                            }
+                                } else {
+                                    String sql = redoSQL;
+                                    totalStartScn = scn;
+                                    startString=timeStamp;
+                                    redisTotalCount++;
+                                    sqlSaver.save(seg_owner,tableName, sql, tableStatus, scn,timeStamp);
+                                }
                             }
                         }
-                    log.info("结果集分析结束"+totalCount);
-                    if (totalStartScn!=null) {
-                        CDCUtil.endLogMnr(targetConnection);
-                    }
-                } catch (Throwable e) {
+                        log.info("结果集分析结束"+totalCount);
+//                        if (totalStartScn!=null) {
+                            CDCUtil.endLogMnr(targetConnection);
+//                        }
+                    } catch (Throwable e) {
                         log.info("", e);
                         exceptionWriteCompoent.wirte(recordSql, e, recordSCN);
                     }finally {
 
                     }
+                }catch (Exception e){
+                    log.error("logminer连接时异常",e);
+                    if (statement!=null&&!statement.isClosed()){
+                        statement.close();
+                    }
+                    if (targetConnection!=null&&!targetConnection.isClosed()){
+                        targetConnection.close();
+                    }
+                    targetConnection=DriverManager.getConnection(connectUrl, targetUserName, targetPassword);
+                    continue;
+                }
+
             }
             }catch(Exception e){
                 log.error("", e);
@@ -229,11 +243,11 @@ public class CDCTask implements Runnable{
     public static boolean ColumnFilter(String tableName, String opeartion, String redoSQL, String sqlUndo, List<LinkTransferTaskRule> linkTransferTaskRuleList,String segName)throws Exception {
         if (CollectionUtils.isEmpty(linkTransferTaskRuleList))return true;
         if (StringUtils.isEmpty(tableName)||StringUtils.isEmpty(opeartion)||StringUtils.isEmpty(segName)){
-            log.info("不应为空的参数记录,并返回成功"+tableName+opeartion+redoSQL+sqlUndo);
+//            log.info("不应为空的参数记录,并返回成功"+tableName+opeartion+redoSQL+sqlUndo);
             return true;
         }
         if (StringUtils.isEmpty(redoSQL)||StringUtils.isEmpty(sqlUndo)){
-            log.info("不应为空的参数记录"+tableName+opeartion+redoSQL+sqlUndo);
+//            log.info("不应为空的参数记录"+tableName+opeartion+redoSQL+sqlUndo);
         }
         Map<String,List<LinkTransferTaskRule>> linkTransferTaskRuleMap=linkTransferTaskRuleList.stream().collect(Collectors.groupingBy(i->i.getSegName()+i.getTargetTablesString()));
         //如果对该表没设规则，那就全部返回true

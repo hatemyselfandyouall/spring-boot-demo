@@ -192,11 +192,16 @@ public class CDCUtil {
 
     }
 
-    public static void endLogMnr(Connection connection) throws SQLException {
-        if (connection != null)
-            connection
-                    .prepareCall("begin DBMS_LOGMNR.END_LOGMNR; end;")
-                    .execute();
+    public static void endLogMnr(Connection connection){
+        try {
+            if (connection != null)
+                connection
+                        .prepareCall("begin DBMS_LOGMNR.END_LOGMNR; end;")
+                        .execute();
+        }catch (Exception e){
+            //do nothing
+        }
+
     }
 
     public static List<String> getArchivedFiles(Connection connection, String startTime, String endTime) throws SQLException {
@@ -272,35 +277,39 @@ public class CDCUtil {
         }
 
     }
-    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles,Long scn,String time) throws SQLException {
+    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles,Long scn,String time)  {
 //        String callStirng = "alter session set nls_date_language='american'";
 //        System.out.println(callStirng);
 //        connection
 //                .prepareCall(callStirng)
 //                .execute();
-        StringBuilder stringBuilder = new StringBuilder("BEGIN ");
-        for (int i = 0; i < archivedFiles.size(); i++) {
-            if (i == 0) {
-                stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(0)).append("',options=>dbms_logmnr.NEW);");
-            } else {
-                stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(i)).append("',options=>dbms_logmnr.ADDFILE);");
+        try {
+            StringBuilder stringBuilder = new StringBuilder("BEGIN ");
+            for (int i = 0; i < archivedFiles.size(); i++) {
+                if (i == 0) {
+                    stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(0)).append("',options=>dbms_logmnr.NEW);");
+                } else {
+                    stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(i)).append("',options=>dbms_logmnr.ADDFILE);");
+                }
             }
-        }
-        stringBuilder.append("dbms_logmnr.START_LOGMNR(");
-        if (scn!=null){
-            stringBuilder.append("startscn=> ").append(scn+"").append(",");
-        }else {
-            if (!StringUtils.isEmpty(time)){
-                stringBuilder.append("starttime=> to_date('").append(time).append("', 'yyyy-mm-dd hh24:mi:ss'),");
+            stringBuilder.append("dbms_logmnr.START_LOGMNR(");
+            if (scn!=null){
+                stringBuilder.append("startscn=> ").append(scn+"").append(",");
+            }else {
+                if (!StringUtils.isEmpty(time)){
+                    stringBuilder.append("starttime=> to_date('").append(time).append("', 'yyyy-mm-dd hh24:mi:ss'),");
+                }
             }
+            stringBuilder.append(" OPTIONS => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG +DBMS_LOGMNR.SKIP_CORRUPTION+ DBMS_LOGMNR.COMMITTED_DATA_ONLY+ DBMS_LOGMNR.NO_ROWID_IN_STMT);");
+            stringBuilder.append("END;");
+            String callStirng = stringBuilder.toString();
+            log.info("logminer启动命令"+callStirng);
+            connection
+                    .prepareCall(callStirng)
+                    .execute();
+        }catch (Exception e){
+            log.error("获取logminer时异常",e);
         }
-        stringBuilder.append(" OPTIONS => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG +DBMS_LOGMNR.SKIP_CORRUPTION+ DBMS_LOGMNR.COMMITTED_DATA_ONLY+ DBMS_LOGMNR.NO_ROWID_IN_STMT);");
-        stringBuilder.append("END;");
-        String callStirng = stringBuilder.toString();
-        System.out.println(callStirng);
-        connection
-                .prepareCall(callStirng)
-                .execute();
     }
 
     public static List<String> getCurrentFiles(Connection connection) throws SQLException {
