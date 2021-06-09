@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.PostConstruct;
 import java.sql.Connection;
@@ -49,7 +51,7 @@ public class SQLSaver {
     ExceptionWriteCompoent exceptionWriteCompoent;
     public LinkedBlockingQueue<Runnable> workerQueues=new LinkedBlockingQueue<>();
 
-    public static final Map<String, TreeMap<Long, String>> tableCacheMap=new HashMap<>();
+    public static final Map<String,TreeMap<Long,String>> tableCacheMap=new HashMap<>();
     public static final LinkedBlockingDeque<SaveTask> taskQueue=new LinkedBlockingDeque<>();
 
     public static Long totalInsertCount=0l;
@@ -66,7 +68,7 @@ public class SQLSaver {
 
     public  void save(String segOwner,String tableName, String sql, String tableStatus, Long scn, String timeStamp){
         if (tableStatus.equals( MSGTYPECONSTANT.TABLE_STATUS_ISFULL_EXTRACT)){
-            TreeMap<Long, String> tableSQLMap=tableCacheMap.get(segOwner+"|"+tableName);
+            TreeMap<Long,String> tableSQLMap=tableCacheMap.get(segOwner+"|"+tableName);
             if (CollectionUtils.isEmpty(tableSQLMap)){
                 tableSQLMap=new TreeMap<>();
             }
@@ -84,6 +86,9 @@ public class SQLSaver {
             return;
         }else {
             redisTemplate.opsForList().leftPushAll("big:queue",sqlMaps.values());
+            log.info("清空完成");
+            sqlMaps.clear();
+            tableCacheMap.remove(tableName);
         }
     }
 

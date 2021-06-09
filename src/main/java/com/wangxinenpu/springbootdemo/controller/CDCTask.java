@@ -189,7 +189,9 @@ public class CDCTask implements Runnable{
                             }
                         }
                     log.info("结果集分析结束"+totalCount);
+                    if (totalStartScn!=null) {
                         CDCUtil.endLogMnr(targetConnection);
+                    }
                 } catch (Throwable e) {
                         log.info("", e);
                         exceptionWriteCompoent.wirte(recordSql, e, recordSCN);
