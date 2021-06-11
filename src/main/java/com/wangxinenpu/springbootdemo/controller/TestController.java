@@ -1,7 +1,6 @@
 package com.wangxinenpu.springbootdemo.controller;
 
 import com.wangxinenpu.springbootdemo.dataobject.User;
-import com.wangxinenpu.springbootdemo.redismq.MessagePublisher;
 import com.wangxinenpu.springbootdemo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +26,7 @@ public class TestController {
     @Autowired
     RedisTemplate redisTemplate;
 
-    @Resource
-    private MessagePublisher messagePublisher;
+
 
 
 
@@ -36,7 +34,6 @@ public class TestController {
     public String hello(){
         log.info("hello log");
         for(int i = 0;i<1000;i++){
-            messagePublisher.publish("hello,world"+i);
 
         }
 

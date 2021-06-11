@@ -86,7 +86,7 @@ public class SQLSaver {
         if (CollectionUtils.isEmpty(sqlMaps)){
             return;
         }else {
-            redisTemplate.opsForList().leftPushAll("big:queue",sqlMaps.values());
+            redisTemplate.opsForList().leftPushAll("big:queue:"+tableName,sqlMaps.values());
             log.info("清空完成");
             sqlMaps.clear();
             tableCacheMap.remove(tableName);
@@ -109,7 +109,7 @@ public class SQLSaver {
 //                statement= connection.createStatement();
 //            }
 //            log.info("监听到增量sql数据，进行同步");
-            redisTemplate.opsForList().leftPush("big:queue",saveTask.getSql());
+            redisTemplate.opsForList().leftPush("big:queue:"+saveTask.getSegOwner()+"|"+saveTask.getTableName(),saveTask.getSql());
 //            totalInsertCount++;
 ////            statement.execute("alter session set nls_date_language='american' ");
 //            statement. execute(saveTask.getSql());

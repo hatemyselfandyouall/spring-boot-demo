@@ -160,10 +160,10 @@ public class CDCTask implements Runnable{
                                 }
                             }
                     }
-                    if (totalStartScn==null||lowerSCN>totalStartScn){
-                        totalStartScn = lowerSCN;
+                    if (totalStartScn==null||lowerSCN>totalStartScn&&lowerSCN!=0){
+                        totalStartScn = lowerSCN+1;
                     }
-                    if (scnFlag.equals(totalStartScn)){
+                    if (scnFlag!=null&&scnFlag.equals(totalStartScn)){
                         batchCount+=100000;
                     }else {
                         batchCount=100000;
