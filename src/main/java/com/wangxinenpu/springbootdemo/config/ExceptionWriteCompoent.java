@@ -36,7 +36,7 @@ public class ExceptionWriteCompoent {
 //        e.printStackTrace(printStream);
 //    }
 
-    public  void wirte(String sql,Throwable e,Long scn)  {
+    public  void wirte(String sql,Throwable e,String scn)  {
         try {
             LinkTransferTaskErrorRecord linkTransferTaskErrorRecord=new LinkTransferTaskErrorRecord();
             sql=sql.replace("'", "\\'");

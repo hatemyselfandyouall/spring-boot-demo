@@ -11,6 +11,7 @@ import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.*;
 import com.wangxinenpu.springbootdemo.dataobject.vo.root.ResultVo;
 import com.wangxinenpu.springbootdemo.service.facade.linkTransTask.LinkTransferTaskFacade;
 
+import com.wangxinenpu.springbootdemo.util.DateUtils;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SQLSaver;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.TableStatusCache;
 import io.swagger.annotations.Api;
@@ -284,7 +285,7 @@ public class LinkTransferTaskController  {
 
     @ApiOperation(value = "startCdc")
     @RequestMapping(value = "/startCdc",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>startCdc(@RequestParam("totalStartTime") Long totalStartTime){
+    public ResultVo<LinkTransferTask>startCdc(@RequestParam(value = "totalStartTime",required = false) Long totalStartTime,@RequestParam(value = "totalStartSCN",required = false) Long totalStartSCN){
         ResultVo resultVo=new ResultVo();
         try {
             if (isWorking){
@@ -293,7 +294,7 @@ public class LinkTransferTaskController  {
                 isWorking=true;
                 List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
                 LinkTransferTaskTotal linkTransferTaskTotal=linkTransferTaskTotalMapper.selectByPrimaryKey(1l);
-                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,null,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
+                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
                 Thread thread=new Thread(cdcTask);
                 thread.start();
             }
@@ -308,12 +309,12 @@ public class LinkTransferTaskController  {
 
     @ApiOperation(value = "重建连接")
     @RequestMapping(value = "/cdcTaskReinit",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>cdcTaskReinit(@RequestParam("totalStartTime") Long totalStartTime){
+    public ResultVo<LinkTransferTask>cdcTaskReinit(@RequestParam("totalStartTime") Long totalStartTime,@RequestParam("totalStartSCN") Long totalStartSCN){
         ResultVo resultVo=new ResultVo();
         try {
             List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
             LinkTransferTaskTotal linkTransferTaskTotal=linkTransferTaskTotalMapper.selectByPrimaryKey(1l);
-            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,null,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
+            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
             Thread thread=new Thread(cdcTask);
             thread.start();
             //获取需要监听的表列表
@@ -336,7 +337,7 @@ public class LinkTransferTaskController  {
                         linkTransferTaskCDDVO.getTargetTablesString(),
                         status);
             }
-            startCdc(System.currentTimeMillis());
+            startCdc(System.currentTimeMillis(),null);
         }catch (Exception e){
             resultVo.setResultDes("重试任务异常,原因为"+e);
             log.error("重试任务异常",e);
@@ -375,7 +376,7 @@ public class LinkTransferTaskController  {
 
 
     //3.添加定时任务
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0/10 * * * ?")
     @RequestMapping(value = "/getCacheStatus",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
     public ResultVo<String>getCacheStatus(){
         ResultVo resultVo=new ResultVo();
@@ -384,8 +385,8 @@ public class LinkTransferTaskController  {
             Long nowInsertCount=sqlSaver.totalInsertCount;
 //            String template="在过去的1分钟里，sql解析器共计解析了"+(nowCdcparseCount-lastCdcParseCount)+"条数据，各SQL写入器分别写入"+(nowInsertCount-lastCdcInserteCount)+"条数据，共计写入"+nowInsertCount+"条数据。解析数据总数为"
 //                    +nowCdcparseCount+"入库数据总数为"+nowInsertCount+"队列中排队等待的数据数为"+SQLSaver.taskQueue.size()+"在Map中等待的数据数为"+SQLSaver.tableCacheMap.size();
-            String template="在过去的1分钟里，sql解析器共计解析了"+(nowCdcparseCount-lastCdcParseCount)+"条数据，放入缓存"+(cdcTask.redisTotalCount-lasRedisCount)+"条数据，共计写入缓存"+cdcTask.redisTotalCount+"条数据。解析数据总数为"
-                    +nowCdcparseCount+"队列中排队等待的数据数为"+redisTemplate.opsForList().size("big:queue")+"在Map中等待的数据数为"+SQLSaver.tableCacheMap.size();
+            String template="在过去的10分钟里，sql解析器共计解析了"+(nowCdcparseCount-lastCdcParseCount)+"条数据，放入缓存"+(cdcTask.redisTotalCount-lasRedisCount)+"条数据，共计写入缓存"+cdcTask.redisTotalCount+"条数据。解析数据总数为"
+                    +nowCdcparseCount+"队列中排队等待的数据数为"+redisTemplate.opsForList().size("big:queue")+"在Map中等待的数据数为"+SQLSaver.tableCacheMap.size()+"quere中的数据量为"+SQLSaver.taskQueue.size();
             lastCdcParseCount=nowCdcparseCount;
             lastCdcInserteCount=nowInsertCount;
             lasRedisCount=cdcTask.redisTotalCount;
@@ -396,9 +397,9 @@ public class LinkTransferTaskController  {
                 result+="不存活";
             }
             log.info(result);
-            log.info(TableStatusCache.statusMap+"");
+//            log.info(TableStatusCache.statusMap+"");
             log.info("lastScn"+cdcTask.totalStartScn);
-            log.info("lastScn"+cdcTask.totalStartTime);
+            log.info("lastTime"+cdcTask.totalStartTime);
             log.info(SQLSaver.tableCacheMap+"");
 //            log.info(cdcTask.totalCount+"");
             log.info(template);
@@ -434,7 +435,10 @@ public class LinkTransferTaskController  {
 //        props.put("password", toPassWord);
 //        props.put("oracle.net.CONNECT_TIMEOUT", "10000000");
 //       Connection connection = DriverManager.getConnection(toUrl, props);
-        System.out.println(System.currentTimeMillis()+"");
+//        System.out.println(System.currentTimeMillis()+"");
+//        ;
+        System.out.println(DateUtils.paserStringToDate("2021-06-10 10:34:30","yyyy-MM-dd HH:mm:ss").getTime());
+        System.out.println(DateUtils.parseLongtoDate(1623292468822l,"yyyy-MM-dd HH:mm:ss"));
     }
 
 }

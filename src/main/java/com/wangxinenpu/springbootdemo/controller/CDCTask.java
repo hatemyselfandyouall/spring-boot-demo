@@ -2,6 +2,7 @@ package com.wangxinenpu.springbootdemo.controller;
 
 import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
 import com.wangxinenpu.springbootdemo.dao.mapper.LinkTransferTaskTotalMapper;
+import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.ColumnRuleTypeEnum;
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskRule;
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskTotal;
 import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.LinkTransferTaskCDDVO;
@@ -22,13 +23,15 @@ import org.springframework.util.StringUtils;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class CDCTask implements Runnable{
 
-    private final ExceptionWriteCompoent exceptionWriteCompoent;
+    public final ExceptionWriteCompoent exceptionWriteCompoent;
     public Long totalStartTime;
 
     public Long totalStartScn;
@@ -42,7 +45,7 @@ public class CDCTask implements Runnable{
 
     private static CDCTask instance;
 
-    private boolean working=true;
+    public boolean working=true;
 
     public String recordSql = "";
     public Long recordSCN = null;
@@ -51,8 +54,8 @@ public class CDCTask implements Runnable{
     private RedisTemplate redisTemplate;
     private LinkTransferTaskTotal linkTransferTaskTotal;
     private LinkTransferTaskTotalMapper linkTransferTaskTotalMapper;
-    private SQLSaver sqlSaver;
-    private Map<String,String>needAppendMap=new HashMap<>();
+    public SQLSaver sqlSaver;
+    public static Map<String,String>needAppendMap=new HashMap<>();
 
 
     public static CDCTask getInstance(Long totalStartTime, List<LinkTransferTaskCDDVO> linkTransferTasks, DefaultMQProducer defaultMQProducer, ExceptionWriteCompoent exceptionWriteCompoent, String fromLinkUrl,
@@ -100,13 +103,6 @@ public class CDCTask implements Runnable{
             String targetUserName = cdcfromusername;
             String targetPassword = cdcfrompassword;
             targetConnection = DriverManager.getConnection(connectUrl, targetUserName, targetPassword);
-            List<String> currentFiles = CDCUtil.getCurrentFiles(targetConnection);
-            List<String> archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "");
-            if (CollectionUtils.isEmpty(archivedFiles)) {
-                archivedFiles=new ArrayList<>();
-            }
-            archivedFiles.addAll(currentFiles);
-            CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles,totalStartScn,startString);
             Set<String> segNames = null;
             Set<String> tableNames = null;
             List<LinkTransferTaskRule> linkTransferTaskRules = new ArrayList<>();
@@ -129,76 +125,48 @@ public class CDCTask implements Runnable{
             }
             tableString = tableString.substring(0, tableString.length() - 1);
             tableString += ")";
+            Integer batchCount=100000;
             while (working) {
                 Statement statement=null;
                 try {
-//                    if (totalStartScn!=null) {
-                        currentFiles = CDCUtil.getCurrentFiles(targetConnection);
-                        archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "");
+                        List<String> currentFiles = CDCUtil.getCurrentFiles(targetConnection);
+                        List<String> archivedFiles = CDCUtil.getArchivedFiles(targetConnection, startString, "",totalStartScn);
                         if (CollectionUtils.isEmpty(archivedFiles)) {
                             archivedFiles=new ArrayList<>();
                         }
                         archivedFiles.addAll(currentFiles);
-                        CDCUtil.startLogMnrWithArchivedFiles(targetConnection, archivedFiles,totalStartScn,startString);
-//                    }
-                    String queryString="SELECT * FROM v$logmnr_contents where  " + "  (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in" + segString + "and table_name in " + tableString;
-                    statement = targetConnection.createStatement();
-                    statement.setFetchSize(1000);
-                    log.info("进行logminer解析");
-                    ResultSet resultSet = statement.executeQuery(queryString);
-                    log.info("解析结束，获得结果集");
-                    try {
-                        while (resultSet.next() && working) {
-                            Long start=System.currentTimeMillis();
-                            totalCount++;
-                            String redoSQL = resultSet.getString("sql_redo");
-                            if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
-                                redoSQL = redoSQL.substring(0, redoSQL.length() - 1);
-                            }
-                            String tableName = resultSet.getString("table_name");
-                            String opeartion = resultSet.getString("operation");
-                            String seg_owner = resultSet.getString("seg_owner");
-                            String timeStamp = resultSet.getString("timestamp");
-                            String CSF = resultSet.getString("CSF");
-                            String rowFlag=resultSet.getString("RS_ID")+"|"+resultSet.getString("SSN");
-                            if ("1".equals(CSF)&&needAppendMap.get(rowFlag)==null){
-                                if (needAppendMap.get(rowFlag)==null){
-                                    needAppendMap.put(rowFlag,redoSQL);
-                                    continue;
+                    String queryString="SELECT sql_redo,table_name,operation,seg_owner,timestamp,CSF,RS_ID,sql_undo,scn,SSN FROM v$logmnr_contents where  " + "  (operation IN ('INSERT','UPDATE','DELETE','DDL'))" +
+                            " and seg_owner in" + segString + "and table_name in " + tableString;
+                    ExecutorService executorService=Executors.newFixedThreadPool(9);
+                    List<Future<LogminerFileTaskResult>> futures=new ArrayList<>();
+                    for (String file:archivedFiles){
+                        log.info("启动分析子任务");
+                        Future<LogminerFileTaskResult> future=executorService.submit(new LogminerFileTask(file,targetConnection,fromLinkUrl,targetUserName,targetPassword,
+                                totalStartScn,startString,queryString,this,linkTransferTaskRules,batchCount));
+                        futures.add(future);
+                    }
+                    Long scnFlag=totalStartScn;
+                    Long lowerSCN=0l;
+                    for (int i=0;i<futures.size();i++){
+                        Future<LogminerFileTaskResult> future=futures.get(i);
+                        LogminerFileTaskResult logminerFileTaskResult=future.get();
+                            if (logminerFileTaskResult!=null&&logminerFileTaskResult.getLastScn() != null ) {
+                                if (i==0){
+                                    lowerSCN=logminerFileTaskResult.getLastScn();
+                                }else {
+                                    if (lowerSCN<logminerFileTaskResult.getLastScn()){
+                                        lowerSCN=logminerFileTaskResult.getLastScn();
+                                    }
                                 }
                             }
-                            if (needAppendMap.get(rowFlag)!=null){
-                                redoSQL=needAppendMap.get(rowFlag)+redoSQL;
-                            }
-                            Long scn = resultSet.getLong("scn");
-                            recordSql = redoSQL;
-                            recordSCN = scn;
-//                            System.out.println(System.currentTimeMillis()-start+"2");
-                            if (ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
-//                                System.out.println(System.currentTimeMillis()-start+"3");
-                                String MapTableName = seg_owner + "|" + tableName;
-                                String tableStatus = TableStatusCache.getStatus(MapTableName);
-                                //如果还没开始全量，这个表的数据不管
-                                if (org.apache.commons.lang3.StringUtils.isEmpty(tableStatus) || tableStatus.equals(MSGTYPECONSTANT.TABLE_STATUS_NOT_INITED_YET)) {
-
-                                } else {
-                                    String sql = redoSQL;
-                                    totalStartScn = scn;
-                                    startString=timeStamp;
-                                    redisTotalCount++;
-                                    sqlSaver.save(seg_owner,tableName, sql, tableStatus, scn,timeStamp);
-                                }
-                            }
-                        }
-                        log.info("结果集分析结束"+totalCount);
-//                        if (totalStartScn!=null) {
-                            CDCUtil.endLogMnr(targetConnection);
-//                        }
-                    } catch (Throwable e) {
-                        log.info("", e);
-                        exceptionWriteCompoent.wirte(recordSql, e, recordSCN);
-                    }finally {
-
+                    }
+                    if (totalStartScn==null||lowerSCN>totalStartScn){
+                        totalStartScn = lowerSCN;
+                    }
+                    if (scnFlag.equals(totalStartScn)){
+                        batchCount+=100000;
+                    }else {
+                        batchCount=100000;
                     }
                 }catch (Exception e){
                     log.error("logminer连接时异常",e);
@@ -337,5 +305,12 @@ public class CDCTask implements Runnable{
 
     public void setWorking(boolean working) {
         this.working = working;
+    }
+
+    public static void main(String[] args) throws Exception {
+        String sql="insert into \"EMPQUERY\".\"AC05\"(\"AAZ203\",\"AAA027\",\"AAB301\",\"AAE140\",\"AAC001\",\"AAB001\",\"AAC050\",\"AAE035\",\"AAE160\",\"AAZ157\",\"AAZ159\",\"AAZ158\",\"AAZ002\",\"AAE002\",\"BAE001\",\"PRSENO\",\"CREATE_TIME\",\"MODIFY_TIME\",\"AAE031\",\"AAE036\",\"AAE011\") values ('4000000050488017','330100','330106','210','4000000001978145','3011000106646088','22','20210610','6322','4000000004369137','4000000002506231','25698819','904176110','202106','01','163999900455125801',TO_DATE('10-JUN-21', 'DD-MON-RR'),TO_DATE('10-JUN-21', 'DD-MON-RR'),NULL,TO_DATE('10-JUN-21', 'DD-MON-RR'),'15450')";
+        System.out.println(ColumnFilter("AC05","INSERT",sql,null,Arrays.asList(new LinkTransferTaskRule()
+                .setTargetTablesString("AC05").setSegName("EMPQUERY").setColumnRuleType(ColumnRuleTypeEnum.EQUALS)
+        .setColumnValue("330183").setColumnName("aab301")),"EMPQUERY"));
     }
 }

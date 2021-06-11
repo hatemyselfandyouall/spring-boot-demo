@@ -204,14 +204,18 @@ public class CDCUtil {
 
     }
 
-    public static List<String> getArchivedFiles(Connection connection, String startTime, String endTime) throws SQLException {
+    public static List<String> getArchivedFiles(Connection connection, String startTime, String endTime,Long scn) throws SQLException {
         String getArchivedFiles = "select recid, name, first_time from v$archived_log where 1=1";
-        if (!StringUtils.isEmpty(startTime)) {
-            getArchivedFiles += "and first_time > to_date('" + startTime + "', 'yyyy-mm-dd hh24:mi:ss')";
+        if (scn!=null&&scn!=0){
+            getArchivedFiles += "and next_change# > " +scn;
+        }else {
+            if (!StringUtils.isEmpty(startTime)) {
+                getArchivedFiles += "and first_time > to_date('" + startTime + "', 'yyyy-mm-dd hh24:mi:ss')";
+            }
         }
-        if (!StringUtils.isEmpty(endTime)) {
-            getArchivedFiles += "and first_time < to_date('" + endTime + "', 'yyyy-mm-dd hh24:mi:ss')";
-        }
+//        if (!StringUtils.isEmpty(endTime)) {
+//            getArchivedFiles += "and first_time < to_date('" + endTime + "', 'yyyy-mm-dd hh24:mi:ss')";
+//        }
         log.info(getArchivedFiles);
         List<String> files = new ArrayList<>();
         ResultSet resultSet = connection.createStatement().executeQuery(getArchivedFiles);
@@ -237,12 +241,12 @@ public class CDCUtil {
 //            prepareNLS(connection);
         String startString = DateUtils.parseLongtoDate(totalStartTime, "yyyy-MM-dd HH:mm:ss");
         List<String> currentFiles = getCurrentFiles(connection);
-        List<String> archivedFiles = getArchivedFiles(connection, startString, "");
+        List<String> archivedFiles = getArchivedFiles(connection, startString, "",null);
         if (CollectionUtils.isEmpty(archivedFiles)) {
             archivedFiles=new ArrayList<>();
         }
         archivedFiles.addAll(currentFiles);
-        startLogMnrWithArchivedFiles(connection, archivedFiles,null,null);
+        startLogMnrWithArchivedFiles(connection, archivedFiles,null,null, null);
 
         Statement statement = connection.createStatement();
         statement.setFetchSize(1000);
@@ -277,7 +281,7 @@ public class CDCUtil {
         }
 
     }
-    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles,Long scn,String time)  {
+    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles, Long scn, String time, Integer batchCount)  {
 //        String callStirng = "alter session set nls_date_language='american'";
 //        System.out.println(callStirng);
 //        connection
@@ -293,8 +297,8 @@ public class CDCUtil {
                 }
             }
             stringBuilder.append("dbms_logmnr.START_LOGMNR(");
-            if (scn!=null){
-                stringBuilder.append("startscn=> ").append(scn+"").append(",");
+            if (scn!=null&&!scn.equals(0l)){
+                stringBuilder.append("startscn=> ").append(scn+"").append(",").append("endscn=>").append((scn+batchCount)+",");
             }else {
                 if (!StringUtils.isEmpty(time)){
                     stringBuilder.append("starttime=> to_date('").append(time).append("', 'yyyy-mm-dd hh24:mi:ss'),");

@@ -417,7 +417,7 @@ public class LinkTransferTaskServiceImpl implements LinkTransferTaskFacade {
             linkTransferTaskCDDVO.setLinkTransferTaskRule(linkTransferTaskRuleMapper.select(new LinkTransferTaskRule()
             .setSegName(i.getSegName())
             .setTargetTablesString(i.getTargetTablesString())
-                    .setStatus(LinkTransferTaskRuleStatusEnum.IS_USE).setFromDataLinkId(i.getToDataLinkId())));
+                    .setStatus(LinkTransferTaskRuleStatusEnum.IS_USE).setFromDataLinkId(i.getFromDataLinkId())));
             return linkTransferTaskCDDVO;
         }).collect(Collectors.toList());
         return linkTransferTaskCDDVOS;

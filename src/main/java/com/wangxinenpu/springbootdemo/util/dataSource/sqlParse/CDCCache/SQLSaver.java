@@ -51,7 +51,7 @@ public class SQLSaver {
     ExceptionWriteCompoent exceptionWriteCompoent;
     public LinkedBlockingQueue<Runnable> workerQueues=new LinkedBlockingQueue<>();
 
-    public static final Map<String,TreeMap<Long,String>> tableCacheMap=new HashMap<>();
+    public static final Map<String,TreeMap<String,String>> tableCacheMap=new HashMap<>();
     public static final LinkedBlockingDeque<SaveTask> taskQueue=new LinkedBlockingDeque<>();
 
     public static Long totalInsertCount=0l;
@@ -66,9 +66,9 @@ public class SQLSaver {
                 .execute(new Worker());
     }
 
-    public  void save(String segOwner,String tableName, String sql, String tableStatus, Long scn, String timeStamp){
+    public  void save(String segOwner,String tableName, String sql, String tableStatus, String scn, String timeStamp){
         if (tableStatus.equals( MSGTYPECONSTANT.TABLE_STATUS_ISFULL_EXTRACT)){
-            TreeMap<Long,String> tableSQLMap=tableCacheMap.get(segOwner+"|"+tableName);
+            TreeMap<String,String> tableSQLMap=tableCacheMap.get(segOwner+"|"+tableName);
             if (CollectionUtils.isEmpty(tableSQLMap)){
                 tableSQLMap=new TreeMap<>();
             }
@@ -82,7 +82,7 @@ public class SQLSaver {
 
     public  void  executeSQLs(String tableName) {
         log.info("开始清空表"+tableName+"的缓存");
-        TreeMap<Long, String> sqlMaps=tableCacheMap.get(tableName);
+        TreeMap<String, String> sqlMaps=tableCacheMap.get(tableName);
         if (CollectionUtils.isEmpty(sqlMaps)){
             return;
         }else {

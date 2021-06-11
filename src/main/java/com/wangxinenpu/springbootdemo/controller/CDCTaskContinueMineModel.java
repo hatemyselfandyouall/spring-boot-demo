@@ -173,7 +173,7 @@ public class CDCTaskContinueMineModel implements Runnable{
                         }
                     } catch (Throwable e) {
                         log.info("", e);
-                        exceptionWriteCompoent.wirte(recordSql, e, recordSCN);
+                        exceptionWriteCompoent.wirte(recordSql, e, "");
                     }
             }
             }catch(Exception e){
