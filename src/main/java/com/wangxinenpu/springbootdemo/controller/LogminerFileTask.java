@@ -48,8 +48,7 @@ public class LogminerFileTask implements Callable {
             try {
                 while (resultSet.next() && cdcTask.working) {
                     Long start=System.currentTimeMillis();
-                    if (Long.MAX_VALUE==cdcTask.totalCount)cdcTask.totalCount=0l;
-                    cdcTask.totalCount++;
+                    if (Long.MAX_VALUE==cdcTask.totalCount)cdcTask.totalCount=0l;cdcTask.totalCount++;
                     String redoSQL = resultSet.getString("sql_redo");
                     if (redoSQL.lastIndexOf(";") == redoSQL.length() - 1) {
                         redoSQL = redoSQL.substring(0, redoSQL.length() - 1);
