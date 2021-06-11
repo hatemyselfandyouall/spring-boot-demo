@@ -83,7 +83,7 @@ public class LogminerFileTask implements Callable {
                         } else {
                             if (Long.MAX_VALUE==cdcTask.redisTotalCount)cdcTask.redisTotalCount=0l;
                             cdcTask.redisTotalCount++;
-//                            cdcTask.sqlSaver.save(seg_owner,tableName, redoSQL, tableStatus, scn+"|"+cdcTask.totalCount,timeStamp);
+                            cdcTask.sqlSaver.save(seg_owner,tableName, redoSQL, tableStatus, scn+"|"+cdcTask.totalCount,timeStamp);
                         }
                     }
                 }
