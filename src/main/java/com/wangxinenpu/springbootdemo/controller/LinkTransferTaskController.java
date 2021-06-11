@@ -437,7 +437,7 @@ public class LinkTransferTaskController  {
 //       Connection connection = DriverManager.getConnection(toUrl, props);
 //        System.out.println(System.currentTimeMillis()+"");
 //        ;
-        System.out.println(DateUtils.paserStringToDate("2021-06-10 10:34:30","yyyy-MM-dd HH:mm:ss").getTime());
+        System.out.println(DateUtils.paserStringToDate("2021-06-11 17:00:30","yyyy-MM-dd HH:mm:ss").getTime());
         System.out.println(DateUtils.parseLongtoDate(1623292468822l,"yyyy-MM-dd HH:mm:ss"));
     }
 

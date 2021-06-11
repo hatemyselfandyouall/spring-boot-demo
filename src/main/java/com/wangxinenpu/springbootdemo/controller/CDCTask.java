@@ -125,7 +125,7 @@ public class CDCTask implements Runnable{
             }
             tableString = tableString.substring(0, tableString.length() - 1);
             tableString += ")";
-            Integer batchCount=100000;
+            Integer batchCount=5000000;
             while (working) {
                 Statement statement=null;
                 try {
@@ -160,13 +160,13 @@ public class CDCTask implements Runnable{
                                 }
                             }
                     }
-                    if (totalStartScn==null||lowerSCN>totalStartScn&&lowerSCN!=0){
+                    if ((totalStartScn==null||lowerSCN>totalStartScn)&&lowerSCN!=0){
                         totalStartScn = lowerSCN+1;
                     }
                     if (scnFlag!=null&&scnFlag.equals(totalStartScn)){
-                        batchCount+=100000;
+                        batchCount+=5000000;
                     }else {
-                        batchCount=100000;
+                        batchCount=5000000;
                     }
                 }catch (Exception e){
                     log.error("logminer连接时异常",e);
