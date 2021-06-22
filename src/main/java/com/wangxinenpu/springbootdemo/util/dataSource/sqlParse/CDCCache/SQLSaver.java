@@ -75,8 +75,8 @@ public class SQLSaver {
             tableSQLMap.put(scn,sql);
             tableCacheMap.put(segOwner+"|"+tableName,tableSQLMap);
         }else {
-            taskQueue.add(new SaveTask(segOwner,tableName,scn,sql,timeStamp));
-//            redisTemplate.opsForList().leftPush("big:queue",sql);
+//            taskQueue.add(new SaveTask(segOwner,tableName,scn,sql,timeStamp));
+            redisTemplate.opsForList().leftPush("big:queue",sql);
         }
     }
 
