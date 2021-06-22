@@ -1,7 +1,9 @@
 package com.wangxinenpu.springbootdemo.controller;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.github.pagehelper.PageInfo;
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import com.wangxinenpu.springbootdemo.config.DruidSource;
 import com.wangxinenpu.springbootdemo.config.ExceptionWriteCompoent;
 import com.wangxinenpu.springbootdemo.dao.mapper.LinkTransferTaskTotalMapper;
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTask;
@@ -25,8 +27,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -57,6 +62,22 @@ public class LinkTransferTaskController  {
     RedisTemplate redisTemplate;
     @Autowired
     LinkTransferTaskTotalMapper linkTransferTaskTotalMapper;
+
+    @Autowired
+    DruidSource druidSource;
+
+    private DruidDataSource druidDataSource;
+
+    @PostConstruct
+    private void initSource(){
+        try {
+            druidDataSource = druidSource.dataSource();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Thread thread=null;
     private CDCTask cdcTask;
 
     @Value("${cdc.to.linkurl}")
@@ -78,6 +99,7 @@ public class LinkTransferTaskController  {
 
     private Long lastCdcInserteCount=0l;
 
+    private int noparseFlag=0;
     static {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
@@ -294,8 +316,8 @@ public class LinkTransferTaskController  {
                 isWorking=true;
                 List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
                 LinkTransferTaskTotal linkTransferTaskTotal=linkTransferTaskTotalMapper.selectByPrimaryKey(1l);
-                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
-                Thread thread=new Thread(cdcTask);
+                cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver,druidDataSource);
+                thread=new Thread(cdcTask);
                 thread.start();
             }
             //获取需要监听的表列表
@@ -309,13 +331,22 @@ public class LinkTransferTaskController  {
 
     @ApiOperation(value = "重建连接")
     @RequestMapping(value = "/cdcTaskReinit",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
-    public ResultVo<LinkTransferTask>cdcTaskReinit(@RequestParam("totalStartTime") Long totalStartTime,@RequestParam("totalStartSCN") Long totalStartSCN){
+    public ResultVo<LinkTransferTask>cdcTaskReinit(@RequestParam(value = "totalStartTime",required = false) Long totalStartTime,@RequestParam(value = "totalStartSCN",required = false) Long totalStartSCN){
         ResultVo resultVo=new ResultVo();
         try {
             List<LinkTransferTaskCDDVO> linkTransferTasks=linkTransferTaskFacade.startCdc();
             LinkTransferTaskTotal linkTransferTaskTotal=linkTransferTaskTotalMapper.selectByPrimaryKey(1l);
-            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver);
-            Thread thread=new Thread(cdcTask);
+            if (cdcTask!=null) {
+                cdcTask.working = false;
+                if (cdcTask.executorService!=null&&!cdcTask.executorService.isShutdown()){
+                    cdcTask.executorService.shutdown();
+                }
+            }
+            if (thread!=null&&!thread.isInterrupted()){
+                thread.interrupt();
+            }
+            cdcTask=CDCTask.getInstance(totalStartTime,linkTransferTasks,null,exceptionWriteCompoent,fromLinkUrl,cdcfromusername,cdcfrompassword,totalStartSCN,linkTransferTaskTotal,linkTransferTaskTotalMapper,redisTemplate,sqlSaver,druidDataSource);
+            thread=new Thread(cdcTask);
             thread.start();
             //获取需要监听的表列表
             //根据列表进行数据增量入mq的工作
@@ -325,6 +356,7 @@ public class LinkTransferTaskController  {
         }
         return resultVo;
     }
+
 
     @ApiOperation(value = "startAllFullCDC")
     @RequestMapping(value = "/startAllFullCDC",method = RequestMethod.GET,produces = {"application/json;charset=UTF-8"})
@@ -385,7 +417,8 @@ public class LinkTransferTaskController  {
             Long nowInsertCount=sqlSaver.totalInsertCount;
 //            String template="在过去的1分钟里，sql解析器共计解析了"+(nowCdcparseCount-lastCdcParseCount)+"条数据，各SQL写入器分别写入"+(nowInsertCount-lastCdcInserteCount)+"条数据，共计写入"+nowInsertCount+"条数据。解析数据总数为"
 //                    +nowCdcparseCount+"入库数据总数为"+nowInsertCount+"队列中排队等待的数据数为"+SQLSaver.taskQueue.size()+"在Map中等待的数据数为"+SQLSaver.tableCacheMap.size();
-            String template="在过去的10分钟里，sql解析器共计解析了"+(nowCdcparseCount-lastCdcParseCount)+"条数据，放入缓存"+(cdcTask.redisTotalCount-lasRedisCount)+"条数据，共计写入缓存"+cdcTask.redisTotalCount+"条数据。解析数据总数为"
+            Long parsedCount=(nowCdcparseCount-lastCdcParseCount);
+            String template="在过去的10分钟里，sql解析器共计解析了"+parsedCount+"条数据，放入缓存"+(cdcTask.redisTotalCount-lasRedisCount)+"条数据，共计写入缓存"+cdcTask.redisTotalCount+"条数据。解析数据总数为"
                     +nowCdcparseCount+"队列中排队等待的数据数为"+redisTemplate.opsForList().size("big:queue")+"在Map中等待的数据数为"+SQLSaver.tableCacheMap.size()+"quere中的数据量为"+SQLSaver.taskQueue.size();
             lastCdcParseCount=nowCdcparseCount;
             lastCdcInserteCount=nowInsertCount;
@@ -401,8 +434,21 @@ public class LinkTransferTaskController  {
             log.info("lastScn"+cdcTask.totalStartScn);
             log.info("lastTime"+cdcTask.totalStartTime);
             log.info(SQLSaver.tableCacheMap+"");
+            log.info(cdcTask.linkTransferTasks+"");
 //            log.info(cdcTask.totalCount+"");
             log.info(template);
+            if (parsedCount==0l){
+                noparseFlag++;
+                if (noparseFlag>3){
+                    log.info("连续四次没有解析,开始重启任务");
+                    Long startSCN=cdcTask.totalStartScn;
+                    Long startTime=cdcTask.totalStartTime;
+                    cdcTaskReinit(startTime,startSCN);
+                    noparseFlag=0;
+                }
+            }else {
+                noparseFlag=0;
+            }
         }catch (Exception e){
             resultVo.setResultDes("重试任务异常,原因为"+e);
             log.error("重试任务异常",e);

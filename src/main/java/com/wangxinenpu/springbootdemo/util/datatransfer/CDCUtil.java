@@ -204,8 +204,8 @@ public class CDCUtil {
 
     }
 
-    public static List<String> getArchivedFiles(Connection connection, String startTime, String endTime,Long scn) throws SQLException {
-        String getArchivedFiles = "select recid, name, first_time from v$archived_log where 1=1";
+    public static List<LogFile> getArchivedFiles(Connection connection, String startTime, String endTime,Long scn) throws SQLException {
+        String getArchivedFiles = "select recid, name, first_time,FIRST_CHANGE#,NEXT_CHANGE# from v$archived_log where 1=1";
         if (scn!=null&&scn!=0){
             getArchivedFiles += "and next_change# > " +scn;
         }else {
@@ -217,10 +217,13 @@ public class CDCUtil {
 //            getArchivedFiles += "and first_time < to_date('" + endTime + "', 'yyyy-mm-dd hh24:mi:ss')";
 //        }
         log.info(getArchivedFiles);
-        List<String> files = new ArrayList<>();
+        List<LogFile> files = new ArrayList<>();
         ResultSet resultSet = connection.createStatement().executeQuery(getArchivedFiles);
         while (resultSet.next()) {
-            files.add(resultSet.getString("name"));
+            String fileName=resultSet.getString("name");
+            Long startSCN=resultSet.getLong("FIRST_CHANGE#");
+            Long end=resultSet.getLong("NEXT_CHANGE#");
+            files.add(new LogFile().setFileName(fileName).setEndSCN(end).setStartSCN(startSCN));
         }
         resultSet.close();
         return files;
@@ -233,55 +236,10 @@ public class CDCUtil {
     }
 
     public static void main(String[] args)throws Exception {
-        Long totalStartTime=1623037905034L;
-        String url="jdbc:oracle:thin:@//172.16.81.11:1521/hzrsrac";
-        String userName="sjhl_fy";
-        String passWord="sjhl_pwdfy21";
-        Connection connection = DriverManager.getConnection(url, userName, passWord);
-//            prepareNLS(connection);
-        String startString = DateUtils.parseLongtoDate(totalStartTime, "yyyy-MM-dd HH:mm:ss");
-        List<String> currentFiles = getCurrentFiles(connection);
-        List<String> archivedFiles = getArchivedFiles(connection, startString, "",null);
-        if (CollectionUtils.isEmpty(archivedFiles)) {
-            archivedFiles=new ArrayList<>();
-        }
-        archivedFiles.addAll(currentFiles);
-        startLogMnrWithArchivedFiles(connection, archivedFiles,null,null, null);
-
-        Statement statement = connection.createStatement();
-        statement.setFetchSize(1000);
-        statement.setQueryTimeout(0);
-        String queryString = String.format(
-                "SELECT * FROM v$logmnr_contents where    (operation IN ('INSERT','UPDATE','DELETE','DDL')) and seg_owner in('EMPQUERY')and table_name in ('ACD8') "
-        );
-//        if (!StringUtils.isEmpty(startSCN)) {
-//            queryString = queryString + "and scn >" + startSCN;
-//        }
-        if (!StringUtils.isEmpty(startString)) {
-            queryString += "and timestamp > to_date('" + startString + "', 'yyyy-mm-dd hh24:mi:ss')";
-        }
-//        if (!StringUtils.isEmpty(endTime)) {
-//            queryString += "and timestamp < to_date('" + endTime + "', 'yyyy-mm-dd hh24:mi:ss')";
-//        }
-        log.info("调用String为" + queryString);
-        ResultSet resultSet = statement
-                .executeQuery(queryString
-                );
-        int count=0;
-        while (resultSet.next()){
-            String sqlRedo=resultSet.getString("sql_redo");
-            if (sqlRedo.contains("330183")) {
-                count++;
-                System.out.println(sqlRedo+"|" + count);
-                System.out.println(CDCTask.ColumnFilter("ACD8","INSERT",sqlRedo,null,
-                        Arrays.asList(new LinkTransferTaskRule().setSegName("EMPQUERY")
-                                .setTargetTablesString("ACD8")
-                                .setColumnName("aab301").setColumnValue("330183").setColumnRuleType(ColumnRuleTypeEnum.EQUALS)),"EMPQUERY"));
-            }
-        }
 
     }
-    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles, Long scn, String time, Integer batchCount)  {
+
+    public static void startLogMnrWithArchivedFiles(Connection connection, LogFile logFile, Long scn, String time, Integer batchCount)  {
 //        String callStirng = "alter session set nls_date_language='american'";
 //        System.out.println(callStirng);
 //        connection
@@ -289,16 +247,19 @@ public class CDCUtil {
 //                .execute();
         try {
             StringBuilder stringBuilder = new StringBuilder("BEGIN ");
-            for (int i = 0; i < archivedFiles.size(); i++) {
-                if (i == 0) {
-                    stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(0)).append("',options=>dbms_logmnr.NEW);");
-                } else {
-                    stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(i)).append("',options=>dbms_logmnr.ADDFILE);");
-                }
-            }
+            stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(logFile.getFileName()).append("',options=>dbms_logmnr.NEW);");
             stringBuilder.append("dbms_logmnr.START_LOGMNR(");
             if (scn!=null&&!scn.equals(0l)){
-                stringBuilder.append("startscn=> ").append(scn+"").append(",").append("endscn=>").append((scn+batchCount)+",");
+                Long startSCN=scn;
+                if (startSCN<logFile.getStartSCN()){
+                    startSCN=logFile.getStartSCN();
+                }
+                Long endSCN=startSCN+batchCount;
+                //此逻辑似乎非必须
+//                if (endSCN>logFile.getEndSCN()){
+//                    endSCN=logFile.getEndSCN();
+//                }
+                stringBuilder.append("startscn=> ").append(startSCN+"").append(",").append("endscn=>").append(endSCN+",");
             }else {
                 if (!StringUtils.isEmpty(time)){
                     stringBuilder.append("starttime=> to_date('").append(time).append("', 'yyyy-mm-dd hh24:mi:ss'),");
@@ -315,12 +276,50 @@ public class CDCUtil {
             log.error("获取logminer时异常",e);
         }
     }
+//    public static void startLogMnrWithArchivedFiles(Connection connection, List<String> archivedFiles, Long scn, String time, Integer batchCount)  {
+////        String callStirng = "alter session set nls_date_language='american'";
+////        System.out.println(callStirng);
+////        connection
+////                .prepareCall(callStirng)
+////                .execute();
+//        try {
+//            StringBuilder stringBuilder = new StringBuilder("BEGIN ");
+//            for (int i = 0; i < archivedFiles.size(); i++) {
+//                if (i == 0) {
+//                    stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(0)).append("',options=>dbms_logmnr.NEW);");
+//                } else {
+//                    stringBuilder.append("dbms_logmnr.add_logfile(logfilename=>'").append(archivedFiles.get(i)).append("',options=>dbms_logmnr.ADDFILE);");
+//                }
+//            }
+//            stringBuilder.append("dbms_logmnr.START_LOGMNR(");
+//            if (scn!=null&&!scn.equals(0l)){
+//                stringBuilder.append("startscn=> ").append(scn+"").append(",").append("endscn=>").append((scn+batchCount)+",");
+//            }else {
+//                if (!StringUtils.isEmpty(time)){
+//                    stringBuilder.append("starttime=> to_date('").append(time).append("', 'yyyy-mm-dd hh24:mi:ss'),");
+//                }
+//            }
+//            stringBuilder.append(" OPTIONS => DBMS_LOGMNR.DICT_FROM_ONLINE_CATALOG +DBMS_LOGMNR.SKIP_CORRUPTION+ DBMS_LOGMNR.COMMITTED_DATA_ONLY+ DBMS_LOGMNR.NO_ROWID_IN_STMT);");
+//            stringBuilder.append("END;");
+//            String callStirng = stringBuilder.toString();
+//            log.info("logminer启动命令"+callStirng);
+//            connection
+//                    .prepareCall(callStirng)
+//                    .execute();
+//        }catch (Exception e){
+//            log.error("获取logminer时异常",e);
+//        }
+//    }
 
-    public static List<String> getCurrentFiles(Connection connection) throws SQLException {
-        List<String> files = new ArrayList<>();
-        ResultSet resultSet = connection.createStatement().executeQuery("select l.STATUS,s.MEMBER from v$log l,v$logfile s where l.GROUP# = s.GROUP# and l.STATUS='CURRENT'");
+    public static List<LogFile> getCurrentFiles(Connection connection) throws SQLException {
+        List<LogFile> files = new ArrayList<>();
+        ResultSet resultSet = connection.createStatement().executeQuery("select l.STATUS,s.MEMBER,l.FIRST_CHANGE#,l.NEXT_CHANGE# from v$log l,v$logfile s where l.GROUP# = s.GROUP# and l.STATUS='CURRENT'");
         while (resultSet.next()) {
-            files.add(resultSet.getString("MEMBER"));
+            String file=resultSet.getString("MEMBER");
+            Long startSCN=resultSet.getLong("FIRST_CHANGE#");
+            Long endSCN=resultSet.getLong("NEXT_CHANGE#");
+            LogFile logFile=new LogFile().setFileName(file).setStartSCN(startSCN).setEndSCN(endSCN);
+            files.add(logFile);
         }
         resultSet.close();
         return files;

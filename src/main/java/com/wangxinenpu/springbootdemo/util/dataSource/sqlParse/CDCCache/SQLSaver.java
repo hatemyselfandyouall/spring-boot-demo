@@ -87,7 +87,7 @@ public class SQLSaver {
             return;
         }else {
             redisTemplate.opsForList().leftPushAll("big:queue:"+tableName,sqlMaps.values());
-            log.info("清空完成");
+            log.info("清空完成,放入缓存"+"big:queue:"+tableName);
             sqlMaps.clear();
             tableCacheMap.remove(tableName);
         }
@@ -108,8 +108,8 @@ public class SQLSaver {
 //            if (statement==null||statement.isClosed()){
 //                statement= connection.createStatement();
 //            }
-//            log.info("监听到增量sql数据，进行同步");
             redisTemplate.opsForList().leftPush("big:queue:"+saveTask.getSegOwner()+"|"+saveTask.getTableName(),saveTask.getSql());
+//            log.info("监听到增量sql数据，进行同步"+"big:queue:"+saveTask.getSegOwner()+"|"+saveTask.getTableName());
 //            totalInsertCount++;
 ////            statement.execute("alter session set nls_date_language='american' ");
 //            statement. execute(saveTask.getSql());
