@@ -93,10 +93,12 @@ public class LogminerFileTask implements Callable {
                             continue;
                         }
                     }
+                    String undoSQL=resultSet.getString("sql_undo");
                     if (cdcTask.needAppendMap.get(rowFlag)!=null){
                         redoSQL=cdcTask.needAppendMap.get(rowFlag)+redoSQL;
+                        undoSQL=null;
                     }
-                    if (cdcTask.ColumnFilter(tableName, opeartion, redoSQL, resultSet.getString("sql_undo"), linkTransferTaskRules, seg_owner)) {
+                    if (cdcTask.ColumnFilter(tableName, opeartion, redoSQL,undoSQL, linkTransferTaskRules, seg_owner)) {
 //                                System.out.println(System.currentTimeMillis()-start+"3");
                         String MapTableName = seg_owner + "|" + tableName;
                         String tableStatus = TableStatusCache.getStatus(MapTableName);

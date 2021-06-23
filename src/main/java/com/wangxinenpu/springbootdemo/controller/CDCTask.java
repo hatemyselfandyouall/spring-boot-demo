@@ -8,13 +8,10 @@ import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskRul
 import com.wangxinenpu.springbootdemo.dataobject.po.linkTask.LinkTransferTaskTotal;
 import com.wangxinenpu.springbootdemo.dataobject.vo.LinkTransferTask.LinkTransferTaskCDDVO;
 import com.wangxinenpu.springbootdemo.util.DateUtils;
+import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.*;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.MSGTYPECONSTANT;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.SQLSaver;
 import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.CDCCache.TableStatusCache;
-import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.InsertSQLParseDTO;
-import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SQLParseDTO;
-import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.SqlParseUtil;
-import com.wangxinenpu.springbootdemo.util.dataSource.sqlParse.UpdateSQLParseDTO;
 import com.wangxinenpu.springbootdemo.util.datatransfer.CDCUtil;
 import com.wangxinenpu.springbootdemo.util.datatransfer.LogFile;
 import lombok.extern.slf4j.Slf4j;
@@ -234,7 +231,7 @@ public class CDCTask implements Runnable{
     public static boolean ColumnFilter(String tableName, String opeartion, String redoSQL, String sqlUndo, List<LinkTransferTaskRule> linkTransferTaskRuleList,String segName)throws Exception {
         if (CollectionUtils.isEmpty(linkTransferTaskRuleList))return true;
         if (StringUtils.isEmpty(tableName)||StringUtils.isEmpty(opeartion)||StringUtils.isEmpty(segName)){
-//            log.info("不应为空的参数记录,并返回成功"+tableName+opeartion+redoSQL+sqlUndo);
+            log.info("不应为空的参数记录,并返回成功"+tableName+opeartion+redoSQL+sqlUndo);
             return true;
         }
         if (StringUtils.isEmpty(redoSQL)||StringUtils.isEmpty(sqlUndo)){
@@ -260,6 +257,7 @@ public class CDCTask implements Runnable{
             return true;
         }catch (Exception e){
             log.info("判断过程中抛出异常",e);
+            log.info("导致判断异常的redosql={},udosql={},opeartion={},tableName={}，segName={}",redoSQL,sqlUndo,opeartion,tableName,segName);
             return true;
         }
 
@@ -279,14 +277,17 @@ public class CDCTask implements Runnable{
                 sqlDetailDTOS.add(updoParse);
                 break;
             case "delete":
-                updateSQLParseDTO = SqlParseUtil.test_update(redoSQL);
+                DeleteSQLParseDTO deleteSQLParseDTO = SqlParseUtil.test_delete(redoSQL);
                 insertSQLParseDTO = SqlParseUtil.test_insert(sqlUndo);
                 sqlDetailDTOS.add(insertSQLParseDTO);
-                sqlDetailDTOS.add(updateSQLParseDTO);
+                sqlDetailDTOS.add(deleteSQLParseDTO);
         }
         return sqlDetailDTOS;
     }
     private static boolean checkSQLRule(SQLParseDTO insertSQLParseDTO, Map<String,List<LinkTransferTaskRule>> listMap){
+       if (insertSQLParseDTO==null||insertSQLParseDTO.getColumns()==null){
+           return true;
+       }
         for (int i=0;i<insertSQLParseDTO.getColumns().size();i++){
             String column=insertSQLParseDTO.getColumns().get(i).toUpperCase();
             String value=insertSQLParseDTO.getValues().get(i);
